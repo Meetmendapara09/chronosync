@@ -1,145 +1,106 @@
 
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed } from "lucide-react"; 
-import type { LucideIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Timer, Globe, Share2, Users, ShieldCheck, Github, Zap } from "lucide-react";
+import Image from 'next/image';
+import type { Metadata } from 'next';
 
-interface Feature {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  link: string;
-  cta: string;
-}
+export const metadata: Metadata = {
+  title: 'ChronoSync - Master Time Across the Globe',
+  description: 'Your ultimate suite of tools for time zone conversion, meeting planning, event scheduling, and more. Designed for simplicity and privacy.',
+};
 
-const features: Feature[] = [
-  {
-    icon: Globe2,
-    title: "Time Zone Converter",
-    description: "Easily convert times between different global time zones.",
-    link: "/time-zone-converter",
-    cta: "Convert Time",
-  },
-  {
-    icon: CountdownIcon,
-    title: "Countdown Timer",
-    description: "Set a countdown to your important events and deadlines.",
-    link: "/countdown-timer",
-    cta: "Set Countdown",
-  },
-  {
-    icon: Clock,
-    title: "World Clock",
-    description: "View the current time in multiple cities around the world.",
-    link: "/world-clock",
-    cta: "View Clocks",
-  },
-  {
-    icon: CalendarDays,
-    title: "Date Calculator",
-    description: "Add or subtract durations from a specific date effortlessly.",
-    link: "/date-calculator",
-    cta: "Calculate Date",
-  },
-  {
-    icon: Cpu,
-    title: "Unix Timestamp Converter",
-    description: "Convert Unix timestamps to/from human-readable dates.",
-    link: "/unix-timestamp-converter",
-    cta: "Convert Timestamp",
-  },
-  {
-    icon: Users,
-    title: "Meeting Planner",
-    description: "Plan meetings across multiple time zones visually.",
-    link: "/multi-timezone-meeting-planner",
-    cta: "Plan Meeting",
-  },
-  {
-    icon: PhoneCall,
-    title: "Best Time to Call",
-    description: "Find optimal overlapping work hours between two locations.",
-    link: "/best-time-to-call",
-    cta: "Find Best Times",
-  },
-  {
-    icon: Sunrise,
-    title: "Sunrise/Sunset Times",
-    description: "Find sunrise and sunset times for cities worldwide.",
-    link: "/sunrise-sunset",
-    cta: "Find Times",
-  },
-  {
-    icon: CalendarPlus,
-    title: "Event Scheduler",
-    description: "Schedule events & generate shareable links for any timezone.",
-    link: "/event-scheduler",
-    cta: "Schedule Event",
-  },
-  {
-    icon: Plane,
-    title: "Travel Time Assistant",
-    description: "Plan travel across time zones, see local arrival times.",
-    link: "/travel-assistant",
-    cta: "Plan Travel",
-  },
-  {
-    icon: CalendarClock,
-    title: "DST Change Finder",
-    description: "Check for upcoming Daylight Saving Time transitions.",
-    link: "/dst-change-finder",
-    cta: "Check DST",
-  },
-  {
-    icon: MapPin,
-    title: "Time Zone Map",
-    description: "Interactive map to explore global time zones visually.",
-    link: "/time-zone-map",
-    cta: "View Map",
-  },
-  {
-    icon: Bed,
-    title: "Sleep Planner",
-    description: "Plan your sleep schedule across different time zones.",
-    link: "/sleep-planner",
-    cta: "Plan Sleep",
-  }
-];
+const GITHUB_REPO_URL = "https://github.com/your-username/chronosync"; // Replace with your actual repo URL
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col items-center">
-      <section className="text-center py-12 md:py-16">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-          Welcome to <span className="text-primary">ChronoSync</span>
-        </h1>
-        <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Your ultimate suite of tools for managing time across the globe. Explore our features to simplify your scheduling and planning.
-        </p>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-primary/10 via-background to-background">
+        <div className="container mx-auto px-4 text-center">
+          <Timer className="h-20 w-20 text-primary mx-auto mb-6" />
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
+            Master Time Across the Globe with <span className="text-primary">ChronoSync</span>
+          </h1>
+          <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+            ChronoSync offers a powerful suite of intuitive tools for time zone conversion, meeting planning, event scheduling, and more. Simplify your global interactions, stay organized, and manage time effortlessly.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <Link href="/features" passHref>
+              <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Zap className="mr-2 h-5 w-5" /> Explore Features
+              </Button>
+            </Link>
+            <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 py-6">
+                <Github className="mr-2 h-5 w-5" /> View on GitHub
+              </Button>
+            </a>
+          </div>
+        </div>
       </section>
 
-      <section className="w-full max-w-5xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {features.sort((a, b) => a.title.localeCompare(b.title)).map((feature) => (
-            <Card key={feature.title} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <feature.icon className="h-8 w-8 text-primary" />
-                  <CardTitle className="text-2xl font-semibold">{feature.title}</CardTitle>
+      {/* Features Highlight Section */}
+      <section className="py-16 md:py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">Why Choose ChronoSync?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="p-3 bg-primary/10 rounded-md w-fit mb-3">
+                  <Globe className="h-8 w-8 text-primary" />
                 </div>
-                <CardDescription>{feature.description}</CardDescription>
+                <CardTitle className="text-2xl">Comprehensive Tools</CardTitle>
               </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-end">
-                <Link href={feature.link} passHref>
-                  <Button variant="default" className="w-full mt-auto bg-primary hover:bg-primary/90">
-                    {feature.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  From time zone conversion and world clocks to multi-timezone meeting planners and event schedulers, get all the time tools you need in one place.
+                </p>
               </CardContent>
             </Card>
-          ))}
+            <Card className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <div className="p-3 bg-primary/10 rounded-md w-fit mb-3">
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">User-Friendly Design</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Intuitive and easy-to-use interface, making complex time management tasks simple for everyone, tech-savvy or not.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                 <div className="p-3 bg-primary/10 rounded-md w-fit mb-3">
+                    <ShieldCheck className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">Privacy-Focused</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Your data is yours. Features like the Event Scheduler store information directly in shareable links, not on our servers.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+      
+      {/* Placeholder for more sections like Testimonials or Detailed Feature Breakdown if needed */}
+      <section className="py-16 md:py-20 bg-muted/50">
+        <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">Ready to Sync Your Time?</h2>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
+                Stop juggling time zones and start streamlining your global communications. ChronoSync is free, open-source, and built for you.
+            </p>
+            <Link href="/features" passHref>
+              <Button size="lg" className="text-lg px-10 py-6 bg-primary hover:bg-primary/90 text-primary-foreground">
+                Get Started Now
+              </Button>
+            </Link>
         </div>
       </section>
     </div>
