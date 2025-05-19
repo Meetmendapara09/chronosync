@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from 'react'; // Added missing React import
 import { useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { DateTime } from 'luxon';
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, MapPin, Clock, Info } from "lucide-react";
 import type { Feature, FeatureCollection, GeoJsonObject } from 'geojson';
-import type { LatLngExpression, LeafletMouseEvent, PathOptions, Layer, LatLng } from 'leaflet'; // Added LatLng
+import type { LatLngExpression, LeafletMouseEvent, PathOptions, Layer, LatLng } from 'leaflet';
 import { illustrativeTimezoneMapData, TimezoneFeatureProperties } from '@/lib/data/timezone-map-data';
 
 // Dynamically import Leaflet components
@@ -23,7 +24,7 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 interface LeafletMapComponentProps {
   geoJsonData: FeatureCollection<any, TimezoneFeatureProperties>;
   onFeatureClick: (event: LeafletMouseEvent, feature: Feature<any, TimezoneFeatureProperties>) => void;
-  selectedPosition: LatLngExpression | null; // Kept as LatLngExpression for flexibility
+  selectedPosition: LatLng | null;
   popupContent: ReactNode | null;
 }
 
@@ -62,16 +63,6 @@ const LeafletMapComponent: React.FC<LeafletMapComponentProps> = React.memo(({
       },
     });
   }, [onFeatureClick, geoJsonStyle]);
-
-  // Ensure selectedPosition is valid before rendering Popup
-  const isValidPosition = (pos: LatLngExpression | null): pos is LatLngExpression => {
-    if (!pos) return false;
-    if (Array.isArray(pos)) { // LatLngTuple: [number, number]
-      return pos.length === 2 && typeof pos[0] === 'number' && typeof pos[1] === 'number';
-    }
-    // LatLngLiteral or Leaflet's LatLng object
-    return typeof (pos as any).lat === 'number' && (typeof (pos as any).lng === 'number' || typeof (pos as any).lon === 'number');
-  };
   
   return (
     <MapContainer center={[20, 0]} zoom={2} style={{ height: '500px', width: '100%' }} className="rounded-md shadow-lg bg-muted">
@@ -79,9 +70,9 @@ const LeafletMapComponent: React.FC<LeafletMapComponentProps> = React.memo(({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {geoJsonData && <GeoJSON key="geojson-layer" data={geoJsonData as GeoJsonObject} style={geoJsonStyle} onEachFeature={onEachFeature} />}
+      {geoJsonData && <GeoJSON key={JSON.stringify(geoJsonData)} data={geoJsonData as GeoJsonObject} style={geoJsonStyle} onEachFeature={onEachFeature} />}
       
-      {isValidPosition(selectedPosition) && popupContent && (
+      {selectedPosition && popupContent && (
         <Popup position={selectedPosition}>
           {popupContent}
         </Popup>
@@ -94,7 +85,7 @@ LeafletMapComponent.displayName = 'LeafletMapComponent';
 
 const TimeZoneMap = () => {
   const [mapReady, setMapReady] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState<LatLng | null>(null); // Store as Leaflet LatLng object
+  const [selectedPosition, setSelectedPosition] = useState<LatLng | null>(null);
   const [selectedTimeZoneInfo, setSelectedTimeZoneInfo] = useState<string | null>(null);
   const [selectedTimeZoneName, setSelectedTimeZoneName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +93,6 @@ const TimeZoneMap = () => {
   const geoJsonData = useMemo(() => illustrativeTimezoneMapData, []);
   
   useEffect(() => {
-    // Ensure Leaflet CSS is imported only on the client
     import('leaflet/dist/leaflet.css')
       .then(() => {
         setMapReady(true);
@@ -115,24 +105,23 @@ const TimeZoneMap = () => {
 
   const handleFeatureClick = useCallback((event: LeafletMouseEvent, feature: Feature<any, TimezoneFeatureProperties>) => {
     setError(null);
+    setSelectedTimeZoneInfo(null); // Clear previous info
+    setSelectedTimeZoneName(null);
     
-    const clickLatLng = event.latlng; // This is L.LatLng object from Leaflet
+    const clickLatLng = event.latlng;
     
-    // Validate clickLatLng before using it
     if (!clickLatLng || typeof clickLatLng.lat !== 'number' || typeof clickLatLng.lng !== 'number') {
       console.warn("Invalid LatLng received from click event:", clickLatLng);
       setError("Could not determine the clicked location accurately.");
       setSelectedPosition(null);
-      setSelectedTimeZoneInfo(null);
-      setSelectedTimeZoneName(null);
       return;
     }
     
-    setSelectedPosition(clickLatLng); // Set position for popup
+    setSelectedPosition(clickLatLng);
 
     const tzid = feature.properties?.tzid;
     const displayName = feature.properties?.name || tzid || "Unknown Region";
-    setSelectedTimeZoneName(displayName); // Set name immediately for popup context
+    setSelectedTimeZoneName(displayName);
 
     if (!tzid) {
       const msg = `Timezone ID not found for ${displayName}.`;
@@ -161,10 +150,10 @@ const TimeZoneMap = () => {
     return (
       <div className="space-y-1 p-1">
         <p className="font-semibold text-foreground text-base">{selectedTimeZoneName}</p>
-        <p className="text-sm text-muted-foreground">{error ? error : (selectedTimeZoneInfo || "Loading...")}</p>
+        <p className="text-sm text-muted-foreground">{error && selectedPosition ? error : (selectedTimeZoneInfo || "Loading...")}</p>
       </div>
     );
-  }, [selectedTimeZoneName, selectedTimeZoneInfo, error]);
+  }, [selectedTimeZoneName, selectedTimeZoneInfo, error, selectedPosition]);
 
   if (!mapReady) {
     return (
@@ -199,11 +188,11 @@ const TimeZoneMap = () => {
           <LeafletMapComponent 
             geoJsonData={geoJsonData}
             onFeatureClick={handleFeatureClick}
-            selectedPosition={selectedPosition} // Pass L.LatLng or null
+            selectedPosition={selectedPosition}
             popupContent={popupContent}
           />
 
-          {error && !selectedPosition && ( // Show general error if no popup is active
+          {error && !selectedPosition && ( 
             <Alert variant="destructive" className="mt-4">
               <Info className="h-4 w-4" />
               <AlertTitle>Map Error</AlertTitle>
@@ -211,12 +200,12 @@ const TimeZoneMap = () => {
             </Alert>
           )}
 
-          {selectedTimeZoneName && !error && selectedPosition && ( // Show info if popup is active and no error state for current click
+          {selectedTimeZoneName && !error && selectedPosition && ( 
             <Alert className="mt-4">
               <Clock className="h-4 w-4" />
               <AlertTitle>{selectedTimeZoneName}</AlertTitle>
               <AlertDescription>
-                Current time: {selectedTimeZoneInfo}
+                Current time: {selectedTimeZoneInfo || "Loading..."}
               </AlertDescription>
             </Alert>
           )}
@@ -231,3 +220,4 @@ const TimeZoneMap = () => {
 };
 
 export default TimeZoneMap;
+
