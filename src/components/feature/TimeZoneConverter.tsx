@@ -9,74 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateTime } from 'luxon';
 import { ArrowRightLeft } from 'lucide-react';
-
-const timeZoneOptions = [
-  // North America
-  { value: 'America/New_York', label: 'New York (EST/EDT)' },
-  { value: 'America/Chicago', label: 'Chicago (CST/CDT)' },
-  { value: 'America/Denver', label: 'Denver (MST/MDT)' },
-  { value: 'America/Phoenix', label: 'Phoenix (MST)' },
-  { value: 'America/Los_Angeles', label: 'Los Angeles (PST/PDT)' },
-  { value: 'America/Anchorage', label: 'Anchorage (AKST/AKDT)' },
-  { value: 'America/Honolulu', label: 'Honolulu (HST)' },
-  { value: 'America/Toronto', label: 'Toronto (EST/EDT)' },
-  { value: 'America/Vancouver', label: 'Vancouver (PST/PDT)' },
-  { value: 'America/Mexico_City', label: 'Mexico City (CST/CDT)' },
-  { value: 'America/Edmonton', label: 'Edmonton (MST/MDT)' },
-  { value: 'America/Winnipeg', label: 'Winnipeg (CST/CDT)' },
-  { value: 'America/Halifax', label: 'Halifax (AST/ADT)' },
-  // South America
-  { value: 'America/Sao_Paulo', label: 'São Paulo (BRT/BRST)' },
-  { value: 'America/Buenos_Aires', label: 'Buenos Aires (ART)' },
-  { value: 'America/Bogota', label: 'Bogotá (COT)' },
-  { value: 'America/Lima', label: 'Lima (PET)' },
-  { value: 'America/Caracas', label: 'Caracas (VET)' },
-  { value: 'America/Santiago', label: 'Santiago (CLT/CLST)' },
-  // Europe
-  { value: 'Europe/London', label: 'London (GMT/BST)' },
-  { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
-  { value: 'Europe/Berlin', label: 'Berlin (CET/CEST)' },
-  { value: 'Europe/Madrid', label: 'Madrid (CET/CEST)' },
-  { value: 'Europe/Rome', label: 'Rome (CET/CEST)' },
-  { value: 'Europe/Moscow', label: 'Moscow (MSK)' },
-  { value: 'Europe/Istanbul', label: 'Istanbul (TRT)' },
-  { value: 'Europe/Kiev', label: 'Kyiv (EET/EEST)' },
-  { value: 'Europe/Lisbon', label: 'Lisbon (WET/WEST)' },
-  { value: 'Europe/Athens', label: 'Athens (EET/EEST)' },
-  // Africa
-  { value: 'Africa/Cairo', label: 'Cairo (EET)' },
-  { value: 'Africa/Johannesburg', label: 'Johannesburg (SAST)' },
-  { value: 'Africa/Nairobi', label: 'Nairobi (EAT)' },
-  { value: 'Africa/Lagos', label: 'Lagos (WAT)' },
-  { value: 'Africa/Casablanca', label: 'Casablanca (WEST/WET)' },
-  { value: 'Africa/Algiers', label: 'Algiers (CET)' },
-  // Asia
-  { value: 'Asia/Dubai', label: 'Dubai (GST)' },
-  { value: 'Asia/Karachi', label: 'Karachi (PKT)' },
-  { value: 'Asia/Kolkata', label: 'Kolkata (IST)' },
-  { value: 'Asia/Dhaka', label: 'Dhaka (BST)' },
-  { value: 'Asia/Bangkok', label: 'Bangkok (ICT)' },
-  { value: 'Asia/Shanghai', label: 'Shanghai (CST)' },
-  { value: 'Asia/Hong_Kong', label: 'Hong Kong (HKT)' },
-  { value: 'Asia/Singapore', label: 'Singapore (SGT)' },
-  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
-  { value: 'Asia/Seoul', label: 'Seoul (KST)' },
-  { value: 'Asia/Jerusalem', label: 'Jerusalem (IST/IDT)' },
-  { value: 'Asia/Riyadh', label: 'Riyadh (AST)' },
-  { value: 'Asia/Tehran', label: 'Tehran (IRST/IRDT)' },
-  // Australia & Oceania
-  { value: 'Australia/Sydney', label: 'Sydney (AEST/AEDT)' },
-  { value: 'Australia/Melbourne', label: 'Melbourne (AEST/AEDT)' },
-  { value: 'Australia/Perth', label: 'Perth (AWST)' },
-  { value: 'Australia/Adelaide', label: 'Adelaide (ACST/ACDT)' },
-  { value: 'Australia/Brisbane', label: 'Brisbane (AEST)' },
-  { value: 'Pacific/Auckland', label: 'Auckland (NZST/NZDT)' },
-  { value: 'Pacific/Fiji', label: 'Fiji (FJT)' },
-  { value: 'Pacific/Honolulu', label: 'Honolulu (HST)' }, // Repeated for clarity, same as America/Honolulu
-  // UTC
-  { value: 'UTC', label: 'UTC' },
-  { value: 'GMT', label: 'GMT (Greenwich Mean Time)'}
-];
+import { timeZoneOptions } from '@/lib/data/timezones';
 
 
 const TimeZoneConverter = () => {
@@ -118,7 +51,15 @@ const TimeZoneConverter = () => {
   const handleSwapTimeZones = () => {
     setFromTimeZone(toTimeZone);
     setToTimeZone(fromTimeZone);
+    // Optionally, re-trigger conversion or clear results
+    setConvertedTime(null); 
+    // Re-initialize current date/time based on the new fromTimeZone
+    const now = DateTime.now().setZone(toTimeZone); // toTimeZone is the new fromTimeZone
+    setInputTime(now.toFormat('HH:mm'));
+    setCurrentDateTime(now.toFormat('yyyy-MM-dd'));
   };
+  
+  const sortedTimeZones = [...timeZoneOptions].sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <div className="flex justify-center py-8">
@@ -158,9 +99,9 @@ const TimeZoneConverter = () => {
                 <SelectTrigger id="from-timezone">
                   <SelectValue placeholder="Select from time zone" />
                 </SelectTrigger>
-                <SelectContent>
-                  {timeZoneOptions.map(tz => (
-                    <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                <SelectContent className="max-h-72">
+                  {sortedTimeZones.map(tz => (
+                    <SelectItem key={`from-${tz.value}`} value={tz.value}>{tz.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -176,9 +117,9 @@ const TimeZoneConverter = () => {
                 <SelectTrigger id="to-timezone">
                   <SelectValue placeholder="Select to time zone" />
                 </SelectTrigger>
-                <SelectContent>
-                  {timeZoneOptions.map(tz => (
-                    <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                <SelectContent className="max-h-72">
+                  {sortedTimeZones.map(tz => (
+                    <SelectItem key={`to-${tz.value}`} value={tz.value}>{tz.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -197,7 +138,7 @@ const TimeZoneConverter = () => {
           )}
         </CardContent>
         <CardFooter className="text-xs text-muted-foreground text-center block">
-          <p>Current time is based on your system settings or the selected 'From' time zone.</p>
+          <p>Time conversion is performed using Luxon and respects Daylight Saving Time (DST) rules for the selected date.</p>
         </CardFooter>
       </Card>
     </div>

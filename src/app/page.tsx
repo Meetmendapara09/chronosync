@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -62,6 +62,13 @@ const features: Feature[] = [
     description: "Find optimal overlapping work hours between two locations.",
     link: "/best-time-to-call",
     cta: "Find Best Times",
+  },
+  {
+    icon: Sunrise, // Using Sunrise, can also use Sunset or a custom icon
+    title: "Sunrise/Sunset Times",
+    description: "Find sunrise and sunset times for cities worldwide.",
+    link: "/sunrise-sunset",
+    cta: "Find Times",
   }
 ];
 
