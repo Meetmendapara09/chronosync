@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, Map, CalendarPlus } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -71,18 +71,18 @@ const features: Feature[] = [
     cta: "Find Times",
   },
   {
-    icon: Map,
-    title: "Time Zone Map",
-    description: "Explore global time zones on an interactive map.",
-    link: "/time-zone-map",
-    cta: "View Map",
-  },
-  {
     icon: CalendarPlus,
     title: "Event Scheduler",
     description: "Schedule events & generate shareable links for any timezone.",
     link: "/event-scheduler",
     cta: "Schedule Event",
+  },
+  {
+    icon: Plane,
+    title: "Travel Time Assistant",
+    description: "Plan travel across time zones, see local arrival times.",
+    link: "/travel-assistant",
+    cta: "Plan Travel",
   }
 ];
 
