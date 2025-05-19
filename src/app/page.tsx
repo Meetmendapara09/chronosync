@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, Map } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -70,13 +70,6 @@ const features: Feature[] = [
     link: "/sunrise-sunset",
     cta: "Find Times",
   },
-  {
-    icon: Map,
-    title: "Time Zone Map",
-    description: "Interactive map to explore global time zones.",
-    link: "/time-zone-map",
-    cta: "Explore Map",
-  }
 ];
 
 export default function HomePage() {
