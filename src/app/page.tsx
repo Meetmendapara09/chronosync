@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -55,6 +55,13 @@ const features: Feature[] = [
     description: "Plan meetings across multiple time zones visually.",
     link: "/multi-timezone-meeting-planner",
     cta: "Plan Meeting",
+  },
+  {
+    icon: PhoneCall,
+    title: "Best Time to Call",
+    description: "Find optimal overlapping work hours between two locations.",
+    link: "/best-time-to-call",
+    cta: "Find Best Times",
   }
 ];
 
