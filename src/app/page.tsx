@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, Map } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -64,11 +64,18 @@ const features: Feature[] = [
     cta: "Find Best Times",
   },
   {
-    icon: Sunrise, // Using Sunrise, can also use Sunset or a custom icon
+    icon: Sunrise,
     title: "Sunrise/Sunset Times",
     description: "Find sunrise and sunset times for cities worldwide.",
     link: "/sunrise-sunset",
     cta: "Find Times",
+  },
+  {
+    icon: Map,
+    title: "Time Zone Map",
+    description: "Interactive map to explore global time zones.",
+    link: "/time-zone-map",
+    cta: "Explore Map",
   }
 ];
 
@@ -85,7 +92,7 @@ export default function HomePage() {
       </section>
 
       <section className="w-full max-w-5xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature) => (
             <Card key={feature.title} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="pb-4">
