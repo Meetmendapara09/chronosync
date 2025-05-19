@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MapPin, Info } from "lucide-react";
 import type { Layer, LeafletMouseEvent } from 'leaflet';
@@ -29,7 +29,6 @@ const LeafletMapComponent: React.FC<MapComponentProps> = ({ geoJsonData, onFeatu
     layer.on({
       click: (e: LeafletMouseEvent) => {
         onFeatureClick(feature.properties as TimezoneFeatureProperties, e.latlng);
-        // Popup is now managed by the parent and passed as children
       }
     });
   };
@@ -48,12 +47,8 @@ const LeafletMapComponent: React.FC<MapComponentProps> = ({ geoJsonData, onFeatu
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <GeoJSON 
-        data={geoJsonData as any} 
-        style={geoJsonStyle} 
-        onEachFeature={onEachFeature}
-      />
-      {children} {/* Render Popup here if provided */}
+      <GeoJSON data={geoJsonData as any} style={geoJsonStyle} onEachFeature={onEachFeature} />
+      {children}
     </MapContainer>
   );
 };
@@ -124,7 +119,7 @@ const TimeZoneMap = () => {
                 geoJsonData={illustrativeTimezoneMapData}
                 onFeatureClick={handleFeatureClick}
               >
-                {selectedTimeZoneInfo && Popup && ( // Ensure Popup is loaded (dynamic import)
+                {selectedTimeZoneInfo && Popup && (
                   <Popup position={selectedTimeZoneInfo.latlng}>
                     <div className="text-sm">
                         <p className="font-semibold">{selectedTimeZoneInfo.name}</p>
