@@ -1,4 +1,3 @@
-
 // src/lib/data/timezone-map-data.ts
 // Illustrative GeoJSON data for timezones.
 // For a real application, you'd use a more comprehensive GeoJSON file.
