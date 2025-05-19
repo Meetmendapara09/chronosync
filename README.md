@@ -29,7 +29,7 @@ ChronoSync is a web application designed to provide a suite of essential time-re
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://your-repository-url/chronosync.git
+    git clone https://github.com/Meetmendapara09/chronosync.git
     cd chronosync
     ```
 
