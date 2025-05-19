@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -43,12 +43,19 @@ const features: Feature[] = [
     cta: "Calculate Date",
   },
   {
-    icon: Cpu, // Icon for Unix Timestamp Converter
+    icon: Cpu,
     title: "Unix Timestamp Converter",
     description: "Convert Unix timestamps to/from human-readable dates.",
     link: "/unix-timestamp-converter",
     cta: "Convert Timestamp",
   },
+  {
+    icon: Users,
+    title: "Meeting Planner",
+    description: "Plan meetings across multiple time zones visually.",
+    link: "/multi-timezone-meeting-planner",
+    cta: "Plan Meeting",
+  }
 ];
 
 export default function HomePage() {
