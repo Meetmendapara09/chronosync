@@ -1,8 +1,16 @@
 
+"use client";
+
 import { Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState<string>('');
+
+  useEffect(() => {
+    setYear(new Date().getFullYear().toString());
+  }, []);
+
   return (
     <footer className="bg-card border-t border-border shadow-sm mt-auto">
       <div className="container mx-auto px-4 py-6 text-center text-muted-foreground">
@@ -13,7 +21,7 @@ const Footer = () => {
           </p>
         </div>
         <p className="text-xs">
-          &copy; {currentYear} ChronoSync. All rights reserved. 
+          {year && `© ${year} `}ChronoSync. All rights reserved. 
           Time data provided by Luxon and is for informational purposes only.
         </p>
       </div>

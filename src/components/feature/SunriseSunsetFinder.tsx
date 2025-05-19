@@ -18,7 +18,7 @@ import { Info } from 'lucide-react';
 
 
 const SunriseSunsetFinder = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedCityValue, setSelectedCityValue] = useState<string>(majorCitiesForSunriseSunset[0]?.name || '');
   const [sunriseTime, setSunriseTime] = useState<string | null>(null);
   const [sunsetTime, setSunsetTime] = useState<string | null>(null);
@@ -68,6 +68,11 @@ const SunriseSunsetFinder = () => {
     setIsLoading(false);
   };
   
+  useEffect(() => {
+    // Set initial date on client-side after mount
+    setSelectedDate(new Date());
+  }, []);
+
   // Automatically trigger find times when date or city changes, after initial mount
   useEffect(() => {
     if (selectedDate && selectedCityObject) {

@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,11 +16,16 @@ import { format as formatDateFns } from 'date-fns'; // for initial display in Po
 
 
 const DateCalculator = () => {
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
+  const [startDate, setStartDate] = useState<Date | undefined>();
   const [operation, setOperation] = useState<'add' | 'subtract'>('add');
   const [durationValue, setDurationValue] = useState<number>(1);
   const [durationUnit, setDurationUnit] = useState<keyof DurationObjectUnits>('days');
   const [resultDate, setResultDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Set initial date on client-side after mount
+    setStartDate(new Date());
+  }, []);
 
   const handleCalculate = () => {
     if (!startDate || isNaN(durationValue) || durationValue < 0) {
