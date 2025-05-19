@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, LinkIcon, CalendarPlus } from "lucide-react";
+import { CalendarIcon, LinkIcon, CalendarPlus, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateTime } from 'luxon';
 import { format as formatDateFns } from 'date-fns';
@@ -106,10 +106,11 @@ const EventScheduler = () => {
       <Card className="w-full max-w-2xl shadow-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
-            <CalendarPlus className="h-8 w-8 text-primary" /> Event Scheduler
+            <CalendarPlus className="h-8 w-8 text-primary" /> Privacy-First Event Scheduler
           </CardTitle>
-          <CardDescription className="text-md">
-            Create an event and generate a shareable link. The link will display the event in the viewer's local time.
+          <CardDescription className="text-md flex flex-col items-center gap-1">
+            <span>Create an event and get a shareable link. Event details are stored in the link itself.</span>
+            <span className="flex items-center gap-1 text-sm"><ShieldCheck className="h-4 w-4 text-green-600" /> No data is stored on our servers.</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -202,7 +203,10 @@ const EventScheduler = () => {
           )}
         </CardContent>
         <CardFooter className="text-xs text-muted-foreground text-center block">
-          <p>Event details are encoded in the link. No data is stored on our servers for this basic scheduler.</p>
+          <p className="flex items-center justify-center gap-1">
+            <ShieldCheck className="h-3 w-3 text-green-600" /> 
+            Your privacy matters: Event information is encoded in the link and not stored on our servers.
+          </p>
         </CardFooter>
       </Card>
     </div>

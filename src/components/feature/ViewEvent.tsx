@@ -6,9 +6,11 @@ import { useSearchParams } from 'next/navigation';
 import { DateTime } from 'luxon';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Globe, Download } from "lucide-react";
+import { CalendarDays, Clock, Globe, Download, FileText, ShieldCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from "@/hooks/use-toast";
+
 
 interface EventDetails {
   name: string;
@@ -24,6 +26,7 @@ const ViewEventContent = () => {
   const [originalEventTime, setOriginalEventTime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewerTimeZone, setViewerTimeZone] = useState<string>('');
+  const { toast } = useToast();
 
   useEffect(() => {
     const name = searchParams.get('name');
@@ -103,6 +106,16 @@ const ViewEventContent = () => {
     });
     return `https://www.google.com/calendar/render?${params.toString()}`;
   };
+
+  const handleDownloadPdf = () => {
+    toast({
+        title: "PDF Export (Coming Soon)",
+        description: "Full PDF export functionality requires a PDF generation library to be integrated.",
+        variant: "default", // or "info" if you add such a variant
+      });
+      // Placeholder for actual PDF generation logic, e.g., using jsPDF
+      // console.log("PDF download clicked. Implement with jsPDF or similar.");
+  };
   
   if (error) {
     return (
@@ -125,6 +138,7 @@ const ViewEventContent = () => {
         </div>
         <Skeleton className="h-10 w-full mt-4" />
          <Skeleton className="h-10 w-full mt-2" />
+         <Skeleton className="h-10 w-full mt-2" />
       </div>
     );
   }
@@ -135,8 +149,9 @@ const ViewEventContent = () => {
         <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
           <CalendarDays className="h-8 w-8 text-primary" /> {eventDetails.name}
         </CardTitle>
-        <CardDescription className="text-md">
-          Event details shown in your local time ({viewerTimeZone}).
+        <CardDescription className="text-md flex flex-col items-center gap-1">
+          <span>Event details shown in your local time ({viewerTimeZone}).</span>
+          <span className="flex items-center gap-1 text-sm"><ShieldCheck className="h-4 w-4 text-green-600" /> This link is private; event data is in the URL, not stored by us.</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -158,7 +173,7 @@ const ViewEventContent = () => {
         </div>
 
         <div className="space-y-3 pt-4">
-            <h4 className="text-lg font-medium text-center mb-2">Add to Calendar:</h4>
+            <h4 className="text-lg font-medium text-center mb-2">Add to Calendar / Export:</h4>
             <Button asChild variant="outline" className="w-full">
                 <a href={googleCalendarLink()} target="_blank" rel="noopener noreferrer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
@@ -168,14 +183,21 @@ const ViewEventContent = () => {
             <Button asChild variant="outline" className="w-full">
                 <a href={`data:text/calendar;charset=utf8,${generateICSData()}`} download={`${eventDetails.name}.ics`}>
                 <Download className="mr-2 h-4 w-4" />
-                Download ICS File
+                Download ICS File (for Outlook, Apple Calendar, etc.)
                 </a>
+            </Button>
+            <Button variant="outline" className="w-full" onClick={handleDownloadPdf}>
+                <FileText className="mr-2 h-4 w-4" />
+                Download as PDF (Coming Soon)
             </Button>
         </div>
 
       </CardContent>
       <CardFooter className="text-xs text-muted-foreground text-center block">
-        <p>Time conversions are powered by Luxon. Ensure your device's time and timezone are set correctly for accurate local display.</p>
+        <p className="flex items-center justify-center gap-1">
+            <ShieldCheck className="h-3 w-3 text-green-600" /> 
+            Your privacy is respected. Event data is part of the link and not stored on our servers.
+        </p>
       </CardFooter>
     </>
   );
@@ -207,6 +229,7 @@ const ViewEventLoadingState = () => (
       </div>
       <div className="space-y-3 pt-4">
         <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
+        <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
       </div>
