@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, PlusCircle, Trash2, Users } from "lucide-react";
+import { CalendarIcon, PlusCircle, Trash2, Users, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateTime } from 'luxon';
 import { format as formatDateFns } from 'date-fns';
@@ -20,6 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter as UiTableFooter
 } from "@/components/ui/table";
 import { timeZoneOptions } from '@/lib/data/timezones';
 
@@ -28,6 +29,16 @@ interface SelectedTimeZone {
   id: string;
   zoneName: string;
   label: string;
+}
+
+interface HourlyTimeData {
+  displayTime: string;
+  isWorkingHour: boolean;
+  isDifferentDay: boolean;
+}
+
+interface TimeGridRowData extends SelectedTimeZone {
+  hourlyTimes: HourlyTimeData[];
 }
 
 const MultiTimezoneMeetingPlanner = () => {
@@ -76,7 +87,7 @@ const MultiTimezoneMeetingPlanner = () => {
 
   const hoursOfDay = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
 
-  const timeGridData = useMemo(() => {
+  const timeGridData: TimeGridRowData[] = useMemo(() => {
     if (!referenceDate || selectedTimeZones.length === 0) return [];
 
     const refDt = DateTime.fromJSDate(referenceDate);
@@ -88,7 +99,7 @@ const MultiTimezoneMeetingPlanner = () => {
           const utcHourDt = refDt.setZone('utc').set({ hour: hour, minute: 0, second: 0, millisecond: 0 });
           const localDt = utcHourDt.setZone(zone.zoneName);
           
-          const isWorking = localDt.hour >= WORK_HOUR_START && localDt.hour < WORK_HOUR_END;
+          const isWorking = localDt.hour >= WORK_HOUR_START && localDt.hour < WORK_HOUR_END && localDt.weekday >= 1 && localDt.weekday <= 5; // Mon-Fri
           return {
             displayTime: localDt.toFormat('HH:mm'),
             isWorkingHour: isWorking,
@@ -99,6 +110,14 @@ const MultiTimezoneMeetingPlanner = () => {
     });
   }, [referenceDate, selectedTimeZones, hoursOfDay]);
 
+  const overallOverlapData: boolean[] = useMemo(() => {
+    if (timeGridData.length === 0) return [];
+    return hoursOfDay.map((_, hourIndex) => {
+      if (timeGridData.length === 0) return false; // No zones, no overlap
+      return timeGridData.every(zoneRow => zoneRow.hourlyTimes[hourIndex].isWorkingHour);
+    });
+  }, [timeGridData, hoursOfDay]);
+
   return (
     <div className="flex justify-center py-8">
       <Card className="w-full max-w-5xl shadow-xl">
@@ -107,7 +126,7 @@ const MultiTimezoneMeetingPlanner = () => {
             <Users className="h-8 w-8 text-primary" /> Multi-Timezone Meeting Planner
           </CardTitle>
           <CardDescription className="text-md">
-            Select timezones and a date to see corresponding local times and working hour overlaps.
+            Select timezones and a date to see corresponding local times and overlapping working hours (Mon-Fri, 9 AM - 5 PM).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -186,9 +205,9 @@ const MultiTimezoneMeetingPlanner = () => {
               <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-card z-10 w-[200px] min-w-[200px]">Timezone</TableHead>
+                    <TableHead className="sticky left-0 bg-card z-20 w-[200px] min-w-[200px] font-semibold">Timezone</TableHead>
                     {hoursOfDay.map(hour => (
-                      <TableHead key={hour} className="text-center min-w-[70px]">
+                      <TableHead key={`header-${hour}`} className="text-center min-w-[70px]">
                         {DateTime.utc().set({ hour }).toFormat('ha').toLowerCase()}
                         <br />
                         <span className="text-xs text-muted-foreground">(UTC)</span>
@@ -204,11 +223,11 @@ const MultiTimezoneMeetingPlanner = () => {
                       </TableCell>
                       {zoneRow.hourlyTimes.map((timeSlot, index) => (
                         <TableCell
-                          key={index}
+                          key={`${zoneRow.id}-${index}`}
                           className={cn(
                             "text-center min-w-[70px]",
-                            timeSlot.isWorkingHour ? "bg-green-100 dark:bg-green-800/30" : "bg-red-50 dark:bg-red-900/20",
-                            timeSlot.isDifferentDay && "opacity-70 border-l-2 border-dashed border-muted-foreground"
+                            timeSlot.isWorkingHour ? "bg-green-100 dark:bg-green-700/30" : "bg-red-50 dark:bg-red-700/10",
+                            timeSlot.isDifferentDay && "opacity-70 border-l-2 border-dashed border-muted-foreground/50"
                           )}
                           title={timeSlot.isWorkingHour ? 'Working Hour' : 'Outside Working Hour'}
                         >
@@ -218,6 +237,24 @@ const MultiTimezoneMeetingPlanner = () => {
                     </TableRow>
                   ))}
                 </TableBody>
+                 {timeGridData.length > 0 && (
+                  <UiTableFooter>
+                    <TableRow className="bg-muted/50 dark:bg-muted/30">
+                      <TableCell className="font-semibold sticky left-0 bg-muted/50 dark:bg-muted/30 z-10 w-[200px] min-w-[200px]">
+                        All Working?
+                      </TableCell>
+                      {overallOverlapData.map((isOverlap, index) => (
+                        <TableCell key={`overlap-${index}`} className="text-center min-w-[70px]">
+                          {isOverlap ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-500 dark:text-red-400 mx-auto" />
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </UiTableFooter>
+                )}
               </Table>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
@@ -227,7 +264,7 @@ const MultiTimezoneMeetingPlanner = () => {
            )}
         </CardContent>
         <CardFooter className="text-xs text-muted-foreground text-center block">
-          <p>Working hours are highlighted from 9 AM to 5 PM in the respective local times. Times shown are for the selected reference date.</p>
+          <p>Working hours (Mon-Fri, 9 AM - 5 PM local time) are highlighted. The "All Working?" row indicates if all selected locations are within these hours for that UTC slot.</p>
         </CardFooter>
       </Card>
     </div>
@@ -235,3 +272,6 @@ const MultiTimezoneMeetingPlanner = () => {
 };
 
 export default MultiTimezoneMeetingPlanner;
+
+
+    
