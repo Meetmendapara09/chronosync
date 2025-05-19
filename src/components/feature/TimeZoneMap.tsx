@@ -1,7 +1,6 @@
-
 "use client";
 
-import * as React from 'react';
+import * as React from "react";
 import {
   useState,
   useEffect,
@@ -9,12 +8,12 @@ import {
   useCallback,
   ReactNode,
   FC,
-  useRef
-} from 'react';
-import dynamic from 'next/dynamic';
-import { DateTime } from 'luxon';
-// Use type-only imports for Leaflet types to avoid SSR issues
-import type { LatLng, LeafletMouseEvent, Layer, GeoJsonObject } from 'leaflet';
+  useRef,
+} from "react";
+import dynamic from "next/dynamic";
+import { DateTime } from "luxon";
+import type { LatLng, LeafletMouseEvent, Layer } from "leaflet";
+import type { Feature, Geometry, GeoJsonObject } from "geojson";
 
 import {
   Card,
@@ -24,22 +23,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle
-} from "@/components/ui/alert";
-import {
-  Loader2,
-  MapPin,
-  Info
-} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, MapPin, Info } from "lucide-react";
 
-import { illustrativeTimezoneMapData, type TimezoneGeoJSON, type TimezoneFeatureProperties } from '@/lib/data/timezone-map-data';
-import { cn } from '@/lib/utils';
+import {
+  illustrativeTimezoneMapData,
+  type TimezoneGeoJSON,
+  type TimezoneFeatureProperties,
+} from "@/lib/data/timezone-map-data";
+import { cn } from "@/lib/utils";
 
-// Type for GeoJSON features specific to our data
-interface TimezoneFeature extends GeoJSON.Feature<GeoJSON.Geometry, TimezoneFeatureProperties> {}
+interface TimezoneFeature
+  extends Feature<Geometry, TimezoneFeatureProperties> {}
 
 const MapLoadingPlaceholder: FC<{ message: string }> = ({ message }) => (
   <div className="flex justify-center items-center h-full w-full bg-background border border-border rounded-md">
@@ -50,17 +45,15 @@ const MapLoadingPlaceholder: FC<{ message: string }> = ({ message }) => (
 
 // Dynamically import Leaflet components
 const MapContainer = dynamic(
-  () => import('react-leaflet').then(mod => mod.MapContainer),
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
   {
     ssr: false,
     loading: () => <MapLoadingPlaceholder message="Loading Map Component..." />,
   }
 );
-
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
-const GeoJSON = dynamic(() => import('react-leaflet').then(mod => mod.GeoJSON), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
-
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const LeafletGeoJSON = dynamic(() => import("react-leaflet").then((mod) => mod.GeoJSON), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 
 interface LeafletMapComponentProps {
   geoJsonData: TimezoneGeoJSON | null;
@@ -69,59 +62,61 @@ interface LeafletMapComponentProps {
   popupContent: ReactNode | null;
 }
 
-const LeafletMapComponent: React.FC<LeafletMapComponentProps> = React.memo(({
-  geoJsonData,
-  onFeatureClick,
-  selectedPosition,
-  popupContent,
-}) => {
-  const geoJsonStyle = useMemo(() => ({
-    fillColor: 'hsl(var(--primary))',
-    weight: 1,
-    opacity: 1,
-    color: 'hsl(var(--card-foreground))',
-    fillOpacity: 0.4,
-  }), []);
+const LeafletMapComponent: FC<LeafletMapComponentProps> = React.memo(
+  ({ geoJsonData, onFeatureClick, selectedPosition, popupContent }) => {
+    const geoJsonStyle = useMemo(() => ({
+      fillColor: "hsl(var(--primary))",
+      weight: 1,
+      opacity: 1,
+      color: "hsl(var(--card-foreground))",
+      fillOpacity: 0.4,
+    }), []);
 
-  const onEachFeature = useCallback((feature: GeoJSON.Feature, layer: Layer) => {
-    layer.on({
-      click: (event: LeafletMouseEvent) => {
-        onFeatureClick(event, feature as TimezoneFeature);
-      },
-      mouseover: (event: LeafletMouseEvent) => {
-        event.target.setStyle({
-          fillOpacity: 0.7,
-          weight: 2,
+    const onEachFeature = useCallback(
+      (feature: Feature, layer: Layer) => {
+        layer.on({
+          click: (event: LeafletMouseEvent) => {
+            onFeatureClick(event, feature as TimezoneFeature);
+          },
+          mouseover: (event: LeafletMouseEvent) => {
+            event.target.setStyle({
+              fillOpacity: 0.7,
+              weight: 2,
+            });
+          },
+          mouseout: (event: LeafletMouseEvent) => {
+            event.target.setStyle(geoJsonStyle);
+          },
         });
       },
-      mouseout: (event: LeafletMouseEvent) => {
-        event.target.setStyle(geoJsonStyle);
-      },
-    });
-  }, [onFeatureClick, geoJsonStyle]);
+      [onFeatureClick, geoJsonStyle]
+    );
 
-  return (
-    <MapContainer
-      center={[20, 0]}
-      zoom={2}
-      style={{ height: '100%', width: '100%' }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
-      {geoJsonData && <GeoJSON data={geoJsonData as GeoJsonObject} style={geoJsonStyle} onEachFeature={onEachFeature} />}
-      
-      {selectedPosition && popupContent && (
-        <Popup position={selectedPosition}>
-          {popupContent}
-        </Popup>
-      )}
-    </MapContainer>
-  );
-});
-LeafletMapComponent.displayName = 'LeafletMapComponent';
-
+    return (
+      <MapContainer
+        center={[20, 0]}
+        zoom={2}
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        />
+        {geoJsonData && (
+          <LeafletGeoJSON
+            data={geoJsonData as GeoJsonObject}
+            style={geoJsonStyle}
+            onEachFeature={onEachFeature}
+          />
+        )}
+        {selectedPosition && popupContent && (
+          <Popup position={selectedPosition}>{popupContent}</Popup>
+        )}
+      </MapContainer>
+    );
+  }
+);
+LeafletMapComponent.displayName = "LeafletMapComponent";
 
 const TimeZoneMap: FC = () => {
   const [mapReady, setMapReady] = useState(false);
@@ -129,73 +124,36 @@ const TimeZoneMap: FC = () => {
   const [selectedTimeZoneInfo, setSelectedTimeZoneInfo] = useState<string | null>(null);
   const [selectedTimeZoneName, setSelectedTimeZoneName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  // Ref to store the dynamically imported Leaflet 'L' object
-  const LRef = useRef<typeof import('leaflet').default | null>(null);
-
   const currentGeoJsonData = useMemo(() => illustrativeTimezoneMapData, []);
 
   useEffect(() => {
-    // Import Leaflet CSS
-    import('leaflet/dist/leaflet.css')
-      .then(() => {
-        setMapReady(true); // CSS loaded, map can be prepared
-      })
-      .catch(err => {
+    import("leaflet/dist/leaflet.css")
+      .then(() => setMapReady(true))
+      .catch((err) => {
         console.error("Failed to load Leaflet CSS:", err);
-        setError("Failed to load map styles. Please ensure Leaflet is correctly installed and refresh the page.");
+        setError("Failed to load map styles. Please ensure Leaflet is correctly installed.");
         setMapReady(false);
       });
   }, []);
-
-  useEffect(() => {
-    // Dynamically import Leaflet 'L' object on the client-side when map is ready
-    if (mapReady && !LRef.current) {
-      import('leaflet').then(leafletModule => {
-        LRef.current = leafletModule.default; // leaflet.default is usually 'L'
-      }).catch(err => {
-        console.error("Failed to load Leaflet (L) dynamically:", err);
-        setError("Map utilities could not be loaded.");
-      });
-    }
-  }, [mapReady]);
 
   const handleFeatureClick = useCallback((event: LeafletMouseEvent, feature: TimezoneFeature) => {
     setError(null);
     setSelectedTimeZoneInfo(null);
     setSelectedTimeZoneName(null);
 
-    const currentL = LRef.current;
-    if (!currentL) {
-      console.error("Leaflet (L) not available for click handling.");
-      setError("Map utilities are still loading. Please try again shortly.");
+    if (event.latlng) {
+      setSelectedPosition(event.latlng);
+    } else {
+      setError("Could not determine click location.");
       return;
     }
 
-    if (event.latlng && typeof event.latlng.lat === 'number' && typeof event.latlng.lng === 'number') {
-      try {
-        setSelectedPosition(currentL.latLng(event.latlng.lat, event.latlng.lng));
-      } catch (e) {
-        console.error("Error creating LatLng object:", e, "with data:", event.latlng);
-        setError("Invalid location data from click event.");
-        setSelectedPosition(null);
-        return;
-      }
-    } else {
-      console.warn("Invalid LatLng in click event:", event.latlng);
-      setError("Could not determine click location.");
-      setSelectedPosition(null);
-      return;
-    }
-    
     const tzid = feature.properties?.tzid;
     const displayName = feature.properties?.name || tzid || "Unknown Region";
     setSelectedTimeZoneName(displayName);
 
     if (!tzid) {
-      console.warn("tzid not found for feature:", feature.properties);
       setError(`Timezone ID (tzid) not found for ${displayName}.`);
-      setSelectedTimeZoneInfo(null);
       return;
     }
 
@@ -205,34 +163,32 @@ const TimeZoneMap: FC = () => {
         const formattedTime = nowInZone.toFormat("HH:mm:ss, MMM dd, yyyy (ZZZZ)");
         setSelectedTimeZoneInfo(formattedTime);
       } else {
-        console.warn("Luxon DateTime is invalid for tzid:", tzid, "Reason:", nowInZone.invalidReason, "Offset:", nowInZone.offset);
-        setError(`Could not get a valid time for ${displayName}. Timezone: ${tzid}. Reason: ${nowInZone.invalidReason || 'Unknown'}.`);
-        setSelectedTimeZoneInfo(null);
+        setError(`Invalid time for ${displayName}. Reason: ${nowInZone.invalidReason || "Unknown"}`);
       }
     } catch (e: any) {
-      console.error(`Error setting timezone for ${displayName} (tzid: ${tzid}):`, e);
-      setError(`Error processing timezone for ${displayName}: ${e.message}.`);
-      setSelectedTimeZoneInfo(null);
+      setError(`Error processing timezone for ${displayName}: ${e.message}`);
     }
-  }, []); // LRef.current is stable, so not needed in dependency array
+  }, []);
 
   const popupContent = useMemo(() => {
     if (!selectedTimeZoneName && !error) return null;
-    
+
     let content;
     if (error && selectedTimeZoneName) {
-        content = <span className="text-destructive">{error}</span>;
+      content = <span className="text-destructive">{error}</span>;
     } else if (selectedTimeZoneInfo) {
-        content = selectedTimeZoneInfo;
+      content = selectedTimeZoneInfo;
     } else if (selectedTimeZoneName) {
-        content = "Loading time or data unavailable...";
+      content = "Loading time or data unavailable...";
     } else {
       return null;
     }
 
     return (
       <div className="space-y-1 p-1 text-sm min-w-[150px]">
-        {selectedTimeZoneName && <p className="font-semibold text-foreground">{selectedTimeZoneName}</p>}
+        {selectedTimeZoneName && (
+          <p className="font-semibold text-foreground">{selectedTimeZoneName}</p>
+        )}
         <p className={cn("text-xs", error && selectedTimeZoneName ? "text-destructive" : "text-muted-foreground")}>
           {content}
         </p>
@@ -242,9 +198,9 @@ const TimeZoneMap: FC = () => {
 
   if (!mapReady && error) {
     return (
-       <Card className="w-full max-w-4xl mx-auto my-8 shadow-xl">
+      <Card className="w-full max-w-4xl mx-auto my-8 shadow-xl">
         <CardHeader className="text-center">
-           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2 text-destructive">
+          <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2 text-destructive">
             <MapPin className="h-8 w-8" />
             Map Load Error
           </CardTitle>
@@ -286,7 +242,7 @@ const TimeZoneMap: FC = () => {
         </div>
         {error && !selectedPosition && (
           <Alert variant="destructive" className="mt-4">
-             <Info className="h-4 w-4" />
+            <Info className="h-4 w-4" />
             <AlertTitle>Map Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>

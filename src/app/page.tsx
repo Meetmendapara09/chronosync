@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, Map } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, Map, CalendarPlus } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -76,6 +76,13 @@ const features: Feature[] = [
     description: "Explore global time zones on an interactive map.",
     link: "/time-zone-map",
     cta: "View Map",
+  },
+  {
+    icon: CalendarPlus,
+    title: "Event Scheduler",
+    description: "Schedule events & generate shareable links for any timezone.",
+    link: "/event-scheduler",
+    cta: "Schedule Event",
   }
 ];
 
@@ -93,7 +100,7 @@ export default function HomePage() {
 
       <section className="w-full max-w-5xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {features.map((feature) => (
+          {features.sort((a, b) => a.title.localeCompare(b.title)).map((feature) => (
             <Card key={feature.title} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-2">
