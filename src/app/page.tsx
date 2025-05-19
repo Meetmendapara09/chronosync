@@ -1,7 +1,8 @@
+
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, ArrowRight } from "lucide-react"; // Renamed Timer to CountdownIcon to avoid conflict
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -40,6 +41,13 @@ const features: Feature[] = [
     description: "Add or subtract durations from a specific date effortlessly.",
     link: "/date-calculator",
     cta: "Calculate Date",
+  },
+  {
+    icon: Cpu, // Icon for Unix Timestamp Converter
+    title: "Unix Timestamp Converter",
+    description: "Convert Unix timestamps to/from human-readable dates.",
+    link: "/unix-timestamp-converter",
+    cta: "Convert Timestamp",
   },
 ];
 
