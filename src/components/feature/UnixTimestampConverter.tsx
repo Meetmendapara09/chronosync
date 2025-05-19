@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -20,15 +20,17 @@ const UnixTimestampConverter = () => {
   const [conversionErrorTsToDate, setConversionErrorTsToDate] = useState<string | null>(null);
 
   // Date/Time to Timestamp states
-  const [dateInput, setDateInput] = useState<string>(DateTime.now().toISODate() || '');
-  const [timeInput, setTimeInput] = useState<string>(DateTime.now().toFormat('HH:mm'));
+  const [dateInput, setDateInput] = useState<string>('');
+  const [timeInput, setTimeInput] = useState<string>('');
   const [timestampResult, setTimestampResult] = useState<{ seconds: number; milliseconds: number } | null>(null);
   const [conversionErrorDateToTs, setConversionErrorDateToTs] = useState<string | null>(null);
   const [localTimeZone, setLocalTimeZone] = useState<string>('');
 
-  useState(() => {
+  useEffect(() => {
     setLocalTimeZone(DateTime.local().zoneName || 'Unknown');
-  });
+    setDateInput(DateTime.now().toISODate() || '');
+    setTimeInput(DateTime.now().toFormat('HH:mm'));
+  }, []);
 
 
   const handleConvertToDateTime = () => {

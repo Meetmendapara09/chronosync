@@ -33,12 +33,16 @@ interface SelectedTimeZone {
 const MultiTimezoneMeetingPlanner = () => {
   const [selectedTimeZones, setSelectedTimeZones] = useState<SelectedTimeZone[]>([]);
   const [timeZoneToAdd, setTimeZoneToAdd] = useState<string>('');
-  const [referenceDate, setReferenceDate] = useState<Date | undefined>(new Date());
+  const [referenceDate, setReferenceDate] = useState<Date | undefined>();
 
   const sortedTimeZonesForSelect = [...timeZoneOptions].sort((a,b) => a.label.localeCompare(b.label));
   
   const WORK_HOUR_START = 9;
   const WORK_HOUR_END = 17;
+
+  useEffect(() => {
+    setReferenceDate(new Date());
+  }, []);
 
   const handleAddZone = () => {
     if (timeZoneToAdd && !selectedTimeZones.find(z => z.zoneName === timeZoneToAdd)) {
