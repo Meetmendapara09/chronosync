@@ -1,9 +1,11 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DateTime } from 'luxon';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Globe, Download, FileText, ShieldCheck } from "lucide-react";
@@ -27,6 +29,7 @@ const ViewEventContent = () => {
   const [error, setError] = useState<string | null>(null);
   const [viewerTimeZone, setViewerTimeZone] = useState<string>('');
   const { toast } = useToast();
+  const eventCardRef = useRef<HTMLDivElement>(null); // Ref for the card content to capture
 
   useEffect(() => {
     const name = searchParams.get('name');
@@ -107,14 +110,58 @@ const ViewEventContent = () => {
     return `https://www.google.com/calendar/render?${params.toString()}`;
   };
 
-  const handleDownloadPdf = () => {
-    toast({
-        title: "PDF Export (Coming Soon)",
-        description: "Full PDF export functionality requires a PDF generation library to be integrated.",
-        variant: "default", // or "info" if you add such a variant
+  const handleDownloadPdf = async () => {
+    if (!eventCardRef.current) {
+      toast({
+        title: "Error",
+        description: "Could not find event content to export.",
+        variant: "destructive",
       });
-      // Placeholder for actual PDF generation logic, e.g., using jsPDF
-      // console.log("PDF download clicked. Implement with jsPDF or similar.");
+      return;
+    }
+    if (!eventDetails) {
+        toast({
+            title: "Error",
+            description: "Event details not loaded yet.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    toast({
+      title: "Generating PDF...",
+      description: "Please wait a moment.",
+    });
+
+    try {
+      const canvas = await html2canvas(eventCardRef.current, {
+        scale: 2, // Increase scale for better quality
+        useCORS: true, // If you have external images
+        logging: false,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px', // Use pixels for easier mapping from canvas
+        format: [canvas.width, canvas.height] // Set PDF page size to match canvas size
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`${eventDetails.name.replace(/ /g, '_')}_event_details.pdf`);
+      
+      toast({
+        title: "PDF Generated!",
+        description: "Your event details PDF has been downloaded.",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "There was an error creating the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   if (error) {
@@ -144,7 +191,7 @@ const ViewEventContent = () => {
   }
 
   return (
-    <>
+    <div ref={eventCardRef}> {/* Attach ref here to capture the content inside this div */}
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
           <CalendarDays className="h-8 w-8 text-primary" /> {eventDetails.name}
@@ -188,7 +235,7 @@ const ViewEventContent = () => {
             </Button>
             <Button variant="outline" className="w-full" onClick={handleDownloadPdf}>
                 <FileText className="mr-2 h-4 w-4" />
-                Download as PDF (Coming Soon)
+                Download as PDF
             </Button>
         </div>
 
@@ -199,7 +246,7 @@ const ViewEventContent = () => {
             Your privacy is respected. Event data is part of the link and not stored on our servers.
         </p>
       </CardFooter>
-    </>
+    </div>
   );
 };
 
@@ -239,3 +286,4 @@ const ViewEventLoadingState = () => (
     </CardFooter>
   </>
 );
+
