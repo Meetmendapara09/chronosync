@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,10 @@ const TimeDifferenceCalculator = () => {
   const [resultInfo, setResultInfo] = useState<ResultInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sortedTimeZones = [...timeZoneOptions].sort((a, b) => a.label.localeCompare(b.label));
+  const sortedTimeZones = useMemo(() => 
+    [...timeZoneOptions].sort((a, b) => a.label.localeCompare(b.label)),
+    [] // Memoize to prevent re-creation on every render
+  );
 
   useEffect(() => {
     // Initialize date and time based on the current 'fromZone'
@@ -60,8 +63,6 @@ const TimeDifferenceCalculator = () => {
         return;
       }
       
-      // Corrected calculation for 'diff'
-      // The difference is based on the UTC offsets of the two timezones at that specific instant.
       const offsetDiffMinutes = toDateTime.offset - fromDateTime.offset;
       const diff: Duration = Duration.fromObject({ minutes: offsetDiffMinutes });
 
