@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4 } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from 'next';
 
@@ -99,7 +99,7 @@ const features: Feature[] = [
   },
   {
     icon: MapPin,
-    title: "Time Zone Map",
+    title: "Interactive Time Zone Map",
     description: "Interactive map to explore global time zones visually.",
     link: "/time-zone-map",
     cta: "View Map",
@@ -138,6 +138,13 @@ const features: Feature[] = [
     description: "Calculate a future date by adding business days (Mon-Fri).",
     link: "/workday-calculator",
     cta: "Calculate Workday",
+  },
+  {
+    icon: Clock4,
+    title: "Shift Work Viewer",
+    description: "Visualize recurring shift patterns across timezones.",
+    link: "/shift-planner",
+    cta: "View Shifts",
   }
 ];
 
