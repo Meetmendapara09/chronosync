@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from 'next';
 
@@ -57,7 +57,7 @@ const features: Feature[] = [
   },
   {
     icon: Users,
-    title: "Meeting Planner",
+    title: "Multi-Timezone Meeting Planner",
     description: "Plan meetings across multiple time zones visually.",
     link: "/multi-timezone-meeting-planner",
     cta: "Plan Meeting",
@@ -65,7 +65,7 @@ const features: Feature[] = [
   {
     icon: PhoneCall,
     title: "Best Time to Call",
-    description: "Find optimal overlapping work hours between two locations.",
+    description: "Find optimal overlapping work hours between locations.",
     link: "/best-time-to-call",
     cta: "Find Best Times",
   },
@@ -110,6 +110,20 @@ const features: Feature[] = [
     description: "Plan your sleep schedule across different time zones.",
     link: "/sleep-planner",
     cta: "Plan Sleep",
+  },
+  {
+    icon: Clock10,
+    title: "Time Difference Calculator",
+    description: "Instantly find the time difference between two timezones.",
+    link: "/time-difference-calculator",
+    cta: "Calculate Difference",
+  },
+  {
+    icon: StopwatchIcon,
+    title: "Stopwatch",
+    description: "Measure elapsed time with lap functionality.",
+    link: "/stopwatch",
+    cta: "Use Stopwatch",
   }
 ];
 

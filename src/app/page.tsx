@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Timer, Globe, ShieldCheck, Github, Zap, Users } from "lucide-react";
+import { Timer, Globe, ShieldCheck, Github, Zap, Users, Clock10, TimerIcon as StopwatchIcon } from "lucide-react"; // Renamed TimerIcon to avoid conflict
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
