@@ -24,7 +24,8 @@ export default function PrivacyPolicyPage() {
         <p>
           Welcome to ChronoSync! This Privacy Policy explains how we handle your information.
           Our goal is to provide useful time management tools while respecting your privacy.
-          <strong>ChronoSync is designed to be a privacy-first application.</strong>
+          <br></br>
+          <strong> ChronoSync is designed to be a privacy-first application.</strong>
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-3 text-foreground">1. Information We Do Not Collect</h2>
@@ -82,7 +83,7 @@ export default function PrivacyPolicyPage() {
           ChronoSync utilizes various open-source JavaScript libraries for its functionality (e.g., Luxon for date/time, Leaflet for maps, etc.). These libraries operate within your browser. We are not responsible for the privacy practices of these third-party libraries.
         </p>
         <p>
-          The application is open-source. You can inspect the code to understand how data is handled. The repository is available at: <a href="https://github.com/your-username/chronosync" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">https://github.com/your-username/chronosync</a> (Please replace with your actual repository URL).
+          The application is open-source. You can inspect the code to understand how data is handled. The repository is available at: <a href="https://github.com/MeetMendapara09/chronosync" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">https://github.com/MeetMendapara09/chronosync</a>
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-3 text-foreground">7. Children's Privacy</h2>
@@ -100,13 +101,11 @@ export default function PrivacyPolicyPage() {
           If you have any questions about this Privacy Policy, please contact us:
         </p>
         <ul>
-          <li>By email: [Your Contact Email Address - e.g., privacy@chronosync.example.com]</li>
-          <li>By visiting this page on our website: [Link to a Contact Page, if you have one]</li>
+        <li>
+  By email: <a href="mailto:meetmendapara09@gmail.com">meetmendapara09@gmail.com</a>
+</li>
         </ul>
 
-        <p className="mt-6 text-sm text-muted-foreground">
-          <em>This is a sample Privacy Policy. You should consult with a legal professional to ensure it meets all legal requirements for your specific situation and jurisdiction.</em>
-        </p>
       </article>
     </div>
   );

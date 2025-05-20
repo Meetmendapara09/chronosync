@@ -3,12 +3,12 @@
 
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Globe, Download, FileText, ShieldCheck } from "lucide-react";
+import { CalendarDays, Clock, Globe, Download, FileText, ShieldCheck, Info, TimerIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from "@/hooks/use-toast";
@@ -18,31 +18,46 @@ interface EventDetails {
   name: string;
   utcStart: DateTime;
   originalZone: string;
-  // durationMinutes?: number; // For future use
+  durationHours: number;
+  durationMinutes: number;
+  description?: string;
 }
 
 const ViewEventContent = () => {
   const searchParams = useSearchParams();
   const [eventDetails, setEventDetails] = useState<EventDetails | null>(null);
-  const [viewerLocalTime, setViewerLocalTime] = useState<string | null>(null);
-  const [originalEventTime, setOriginalEventTime] = useState<string | null>(null);
+  const [viewerLocalStartTime, setViewerLocalStartTime] = useState<string | null>(null);
+  const [viewerLocalEndTime, setViewerLocalEndTime] = useState<string | null>(null);
+  const [originalEventStartTime, setOriginalEventStartTime] = useState<string | null>(null);
+  const [originalEventEndTime, setOriginalEventEndTime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewerTimeZone, setViewerTimeZone] = useState<string>('');
   const { toast } = useToast();
-  const eventCardRef = useRef<HTMLDivElement>(null); // Ref for the card content to capture
+  const eventCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const name = searchParams.get('name');
     const dtISO = searchParams.get('dt'); // UTC ISO String
     const origZone = searchParams.get('origZone');
+    const durHStr = searchParams.get('durH');
+    const durMStr = searchParams.get('durM');
+    const desc = searchParams.get('desc');
 
     if (typeof window !== 'undefined') {
       setViewerTimeZone(DateTime.local().zoneName || 'your local timezone');
     }
 
-    if (!name || !dtISO || !origZone) {
-      setError("Event details are missing or invalid in the link.");
+    if (!name || !dtISO || !origZone || durHStr === null || durMStr === null) {
+      setError("Event details are missing or invalid in the link. Required: name, dt, origZone, durH, durM.");
       return;
+    }
+
+    const durationHours = parseInt(durHStr, 10);
+    const durationMinutes = parseInt(durMStr, 10);
+
+    if (isNaN(durationHours) || isNaN(durationMinutes) || durationHours < 0 || durationMinutes < 0 || durationMinutes >= 60 || (durationHours === 0 && durationMinutes === 0)) {
+        setError("Invalid event duration in link.");
+        return;
     }
 
     try {
@@ -51,14 +66,28 @@ const ViewEventContent = () => {
         setError(`Invalid event date/time in link. Reason: ${utcStart.invalidReason || 'Unknown'}`);
         return;
       }
-
-      setEventDetails({ name, utcStart, originalZone: origZone });
-
-      const viewerLocalDt = utcStart.setZone(DateTime.local().zoneName);
-      setViewerLocalTime(viewerLocalDt.toFormat("DDDD, HH:mm (ZZZZ)"));
       
-      const originalLocalDt = utcStart.setZone(origZone);
-      setOriginalEventTime(originalLocalDt.toFormat("DDDD, HH:mm (ZZZZ)"));
+      const eventDuration = Duration.fromObject({ hours: durationHours, minutes: durationMinutes });
+      const utcEnd = utcStart.plus(eventDuration);
+
+      setEventDetails({ 
+        name, 
+        utcStart, 
+        originalZone: origZone,
+        durationHours,
+        durationMinutes,
+        description: desc || undefined 
+      });
+
+      const viewerLocalDtStart = utcStart.setZone(DateTime.local().zoneName);
+      const viewerLocalDtEnd = utcEnd.setZone(DateTime.local().zoneName);
+      setViewerLocalStartTime(viewerLocalDtStart.toFormat("DDDD, HH:mm"));
+      setViewerLocalEndTime(viewerLocalDtEnd.toFormat("HH:mm (ZZZZ)"));
+      
+      const originalLocalDtStart = utcStart.setZone(origZone);
+      const originalLocalDtEnd = utcEnd.setZone(origZone);
+      setOriginalEventStartTime(originalLocalDtStart.toFormat("DDDD, HH:mm"));
+      setOriginalEventEndTime(originalLocalDtEnd.toFormat("HH:mm (ZZZZ)"));
 
     } catch (e) {
       console.error("Error parsing event details:", e);
@@ -68,15 +97,15 @@ const ViewEventContent = () => {
 
   const generateICSData = () => {
     if (!eventDetails) return null;
-    const { name, utcStart } = eventDetails;
-    // Assuming a 1-hour duration for simplicity in this version
-    const utcEnd = utcStart.plus({ hours: 1 }); 
+    const { name, utcStart, durationHours, durationMinutes, description } = eventDetails;
+    const eventDuration = Duration.fromObject({ hours: durationHours, minutes: durationMinutes });
+    const utcEnd = utcStart.plus(eventDuration); 
 
     const formatDateForICS = (dt: DateTime) => dt.toFormat("yyyyMMdd'T'HHmmss'Z'");
 
-    const uid = `chronosync-${utcStart.toMillis()}@example.com`; // Basic UID
+    const uid = `chronosync-${utcStart.toMillis()}@chronosync.app`; 
 
-    const icsContent = [
+    let icsContentArray = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//ChronoSync//EventScheduler//EN',
@@ -86,26 +115,47 @@ const ViewEventContent = () => {
       `DTSTART:${formatDateForICS(utcStart)}`,
       `DTEND:${formatDateForICS(utcEnd)}`,
       `SUMMARY:${name}`,
-      `DESCRIPTION:Event scheduled via ChronoSync. Original time: ${originalEventTime || 'N/A'}`,
+    ];
+    if (description) {
+        // Escape special characters for ICS description
+        const escapedDescription = description
+            .replace(/\\/g, '\\\\')
+            .replace(/;/g, '\\;')
+            .replace(/,/g, '\\,')
+            .replace(/\n/g, '\\n');
+        icsContentArray.push(`DESCRIPTION:${escapedDescription}`);
+    }
+    icsContentArray.push(
       'END:VEVENT',
       'END:VCALENDAR'
-    ].join('\r\n');
-    return encodeURIComponent(icsContent);
+    );
+
+    return encodeURIComponent(icsContentArray.join('\r\n'));
   };
 
   const googleCalendarLink = () => {
     if (!eventDetails) return "#";
-    const { name, utcStart } = eventDetails;
-    const utcEnd = utcStart.plus({ hours: 1 }); // Assuming 1-hour duration
+    const { name, utcStart, durationHours, durationMinutes, description, originalZone } = eventDetails;
+    const eventDuration = Duration.fromObject({ hours: durationHours, minutes: durationMinutes });
+    const utcEnd = utcStart.plus(eventDuration);
 
     const formatForGoogle = (dt: DateTime) => dt.toFormat("yyyyMMdd'T'HHmmss'Z'");
+    
+    let detailsContent = `Event scheduled via ChronoSync.`;
+    if (originalEventStartTime) {
+      detailsContent += `\nOriginal time in ${originalZone}: ${originalEventStartTime.split(', ')[1]} - ${originalEventEndTime?.split(' (')[0] || ''}`;
+    }
+    if (description) {
+        detailsContent += `\n\nDescription:\n${description}`;
+    }
+
 
     const params = new URLSearchParams({
       action: 'TEMPLATE',
       text: name,
       dates: `${formatForGoogle(utcStart)}/${formatForGoogle(utcEnd)}`,
-      details: `Event scheduled via ChronoSync.\nOriginal time in ${eventDetails.originalZone}: ${originalEventTime || 'N/A'}`,
-      ctz: 'UTC' // Important: dates are in UTC
+      details: detailsContent,
+      ctz: 'UTC' 
     });
     return `https://www.google.com/calendar/render?${params.toString()}`;
   };
@@ -135,20 +185,20 @@ const ViewEventContent = () => {
 
     try {
       const canvas = await html2canvas(eventCardRef.current, {
-        scale: 2, // Increase scale for better quality
-        useCORS: true, // If you have external images
+        scale: 2, 
+        useCORS: true, 
         logging: false,
       });
       const imgData = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
         orientation: 'portrait',
-        unit: 'px', // Use pixels for easier mapping from canvas
-        format: [canvas.width, canvas.height] // Set PDF page size to match canvas size
+        unit: 'px', 
+        format: [canvas.width, canvas.height] 
       });
       
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(`${eventDetails.name.replace(/ /g, '_')}_event_details.pdf`);
+      pdf.save(`${eventDetails.name.replace(/\s+/g, '_').toLowerCase()}_event_details.pdf`);
       
       toast({
         title: "PDF Generated!",
@@ -167,7 +217,7 @@ const ViewEventContent = () => {
   if (error) {
     return (
       <Alert variant="destructive" className="my-8">
-        <CalendarDays className="h-4 w-4" />
+        <Info className="h-4 w-4" />
         <AlertTitle>Error Loading Event</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
       </Alert>
@@ -189,9 +239,11 @@ const ViewEventContent = () => {
       </div>
     );
   }
+  
+  const formattedDuration = Duration.fromObject({ hours: eventDetails.durationHours, minutes: eventDetails.durationMinutes}).toHuman({ unitDisplay: 'short' });
 
   return (
-    <div ref={eventCardRef}> {/* Attach ref here to capture the content inside this div */}
+    <div ref={eventCardRef} className="p-2">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
           <CalendarDays className="h-8 w-8 text-primary" /> {eventDetails.name}
@@ -207,17 +259,38 @@ const ViewEventContent = () => {
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
               <Clock className="h-5 w-5 text-accent" /> Your Local Time
             </h3>
-            <p className="text-2xl">{viewerLocalTime ? viewerLocalTime.split(', ')[1]?.split(' (')[0] : 'Calculating...'}</p>
-            <p className="text-sm text-muted-foreground">{viewerLocalTime ? viewerLocalTime.split(', ')[0] : ''} ({viewerTimeZone})</p>
+            <p className="text-xl">
+              {viewerLocalStartTime ? viewerLocalStartTime.split(', ')[1] : 'Calculating...'} - {viewerLocalEndTime ? viewerLocalEndTime.split(' (')[0] : ''}
+            </p>
+            <p className="text-sm text-muted-foreground">{viewerLocalStartTime ? viewerLocalStartTime.split(', ')[0] : ''} ({viewerTimeZone})</p>
           </div>
           <div className="p-4 bg-muted/50 rounded-lg shadow">
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
               <Globe className="h-5 w-5 text-secondary-foreground" /> Original Event Time
             </h3>
-            <p className="text-2xl">{originalEventTime ? originalEventTime.split(', ')[1]?.split(' (')[0] : 'Calculating...'}</p>
-            <p className="text-sm text-muted-foreground">{originalEventTime ? originalEventTime.split(', ')[0] : ''} ({eventDetails.originalZone})</p>
+             <p className="text-xl">
+                {originalEventStartTime ? originalEventStartTime.split(', ')[1] : 'Calculating...'} - {originalEventEndTime ? originalEventEndTime.split(' (')[0] : ''}
+            </p>
+            <p className="text-sm text-muted-foreground">{originalEventStartTime ? originalEventStartTime.split(', ')[0] : ''} ({eventDetails.originalZone})</p>
           </div>
         </div>
+
+        <div className="p-4 bg-muted/20 rounded-lg shadow">
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
+                <TimerIcon className="h-5 w-5 text-primary" /> Duration
+            </h3>
+            <p className="text-md">{formattedDuration}</p>
+        </div>
+
+        {eventDetails.description && (
+            <div className="p-4 bg-muted/20 rounded-lg shadow">
+                <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
+                    <Info className="h-5 w-5 text-primary" /> Description
+                </h3>
+                <p className="text-md whitespace-pre-wrap">{eventDetails.description}</p>
+            </div>
+        )}
+
 
         <div className="space-y-3 pt-4">
             <h4 className="text-lg font-medium text-center mb-2">Add to Calendar / Export:</h4>
@@ -228,7 +301,7 @@ const ViewEventContent = () => {
                 </a>
             </Button>
             <Button asChild variant="outline" className="w-full">
-                <a href={`data:text/calendar;charset=utf8,${generateICSData()}`} download={`${eventDetails.name}.ics`}>
+                <a href={`data:text/calendar;charset=utf8,${generateICSData()}`} download={`${eventDetails.name.replace(/\s+/g, '_').toLowerCase()}.ics`}>
                 <Download className="mr-2 h-4 w-4" />
                 Download ICS File (for Outlook, Apple Calendar, etc.)
                 </a>
@@ -274,6 +347,8 @@ const ViewEventLoadingState = () => (
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
       </div>
+      <Skeleton className="h-16 w-full mt-4" /> {/* Placeholder for duration */}
+      <Skeleton className="h-20 w-full mt-2" /> {/* Placeholder for description */}
       <div className="space-y-3 pt-4">
         <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
         <Skeleton className="h-10 w-full" />

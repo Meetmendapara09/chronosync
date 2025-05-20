@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /.pnp
+
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -35,11 +36,26 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
-.genkit/*
+# genkit 
+.genkit/
+
+# Environment variables
 .env*
 
-# firebase
+# firebase logs
 firebase-debug.log
 firestore-debug.log
+
+# IDE and Editor specific files
+/.vscode/
+/.idea/
+
+# Documentation 
+/docs/
+
+# General log files
+*.log
+
+/.idx/*
+

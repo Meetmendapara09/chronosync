@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, LinkIcon, CalendarPlus, ShieldCheck } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { CalendarIcon, LinkIcon, CalendarPlus, ShieldCheck, ClockIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DateTime } from 'luxon';
 import { format as formatDateFns } from 'date-fns';
@@ -21,6 +22,9 @@ const EventScheduler = () => {
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [eventTime, setEventTime] = useState<string>('10:00');
   const [eventTimeZone, setEventTimeZone] = useState<string>('');
+  const [eventDurationHours, setEventDurationHours] = useState<string>('1');
+  const [eventDurationMinutes, setEventDurationMinutes] = useState<string>('0');
+  const [eventDescription, setEventDescription] = useState<string>('');
   const [shareableLink, setShareableLink] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -35,12 +39,26 @@ const EventScheduler = () => {
     if (!eventName || !eventDate || !eventTime || !eventTimeZone) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all event details.",
+        description: "Please fill in event name, date, time, and timezone.",
         variant: "destructive",
       });
       setShareableLink(null);
       return;
     }
+
+    const durationH = parseInt(eventDurationHours, 10);
+    const durationM = parseInt(eventDurationMinutes, 10);
+
+    if (isNaN(durationH) || isNaN(durationM) || durationH < 0 || durationM < 0 || durationM >= 60 || (durationH === 0 && durationM === 0)) {
+      toast({
+        title: "Invalid Duration",
+        description: "Please enter a valid non-zero event duration.",
+        variant: "destructive",
+      });
+      setShareableLink(null);
+      return;
+    }
+
 
     try {
       const eventDateStr = DateTime.fromJSDate(eventDate).toISODate();
@@ -65,7 +83,12 @@ const EventScheduler = () => {
         name: eventName,
         dt: utcDateTime.toISO()!, // Store as UTC ISO string
         origZone: eventTimeZone,
+        durH: String(durationH),
+        durM: String(durationM),
       });
+      if (eventDescription) {
+        linkParams.set('desc', eventDescription);
+      }
 
       // Ensure window is defined before constructing URL (for Next.js SSR/client consistency)
       if (typeof window !== 'undefined') {
@@ -115,7 +138,7 @@ const EventScheduler = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="event-name">Event Name</Label>
+            <Label htmlFor="event-name">Event Name <span className="text-destructive">*</span></Label>
             <Input
               id="event-name"
               placeholder="e.g., Team Meeting"
@@ -126,7 +149,7 @@ const EventScheduler = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="event-date">Event Date</Label>
+              <Label htmlFor="event-date">Event Date <span className="text-destructive">*</span></Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -153,7 +176,7 @@ const EventScheduler = () => {
               </Popover>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="event-time">Event Time</Label>
+              <Label htmlFor="event-time">Event Time <span className="text-destructive">*</span></Label>
               <Input
                 id="event-time"
                 type="time"
@@ -162,9 +185,40 @@ const EventScheduler = () => {
               />
             </div>
           </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="event-duration">Event Duration <span className="text-destructive">*</span></Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Input
+                  id="event-duration-hours"
+                  type="number"
+                  value={eventDurationHours}
+                  onChange={(e) => setEventDurationHours(e.target.value)}
+                  placeholder="Hours"
+                  min="0"
+                  max="23"
+                />
+                 <p className="text-xs text-muted-foreground mt-1">Hours (0-23)</p>
+              </div>
+              <div>
+                <Input
+                  id="event-duration-minutes"
+                  type="number"
+                  value={eventDurationMinutes}
+                  onChange={(e) => setEventDurationMinutes(e.target.value)}
+                  placeholder="Minutes"
+                  min="0"
+                  max="59"
+                  step="15"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Minutes (0-59)</p>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-2">
-            <Label htmlFor="event-timezone">Your Event's Time Zone</Label>
+            <Label htmlFor="event-timezone">Your Event's Time Zone <span className="text-destructive">*</span></Label>
             <Select value={eventTimeZone} onValueChange={setEventTimeZone}>
               <SelectTrigger id="event-timezone">
                 <SelectValue placeholder="Select event time zone" />
@@ -176,6 +230,18 @@ const EventScheduler = () => {
               </SelectContent>
             </Select>
           </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="event-description">Event Description (Optional)</Label>
+            <Textarea
+              id="event-description"
+              placeholder="Add any details for your event..."
+              value={eventDescription}
+              onChange={(e) => setEventDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
 
           <Button onClick={handleGenerateLink} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
             Create Event & Get Link

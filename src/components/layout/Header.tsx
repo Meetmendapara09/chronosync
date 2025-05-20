@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Timer, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const GITHUB_REPO_URL = "https://github.com/your-username/chronosync"; // Replace with your actual repo URL
+const GITHUB_REPO_URL = "https://github.com/MeetMendapara/chronosync"; 
 
 const Header = () => {
   return (

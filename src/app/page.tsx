@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Your ultimate suite of tools for time zone conversion, meeting planning, event scheduling, and more. Designed for simplicity and privacy.',
 };
 
-const GITHUB_REPO_URL = "https://github.com/your-username/chronosync"; // Replace with your actual repo URL
+const GITHUB_REPO_URL = "https://github.com/MeetMendapara09/chronosync";
 
 export default function LandingPage() {
   return (
