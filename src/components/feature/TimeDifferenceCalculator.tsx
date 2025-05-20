@@ -60,14 +60,16 @@ const TimeDifferenceCalculator = () => {
         return;
       }
       
-      const diff: Duration = toDateTime.offset - fromDateTime.offset !== 0 
-        ? fromDateTime.until(toDateTime).diff(toDateTime.offset - fromDateTime.offset > 0 ? fromDateTime : toDateTime).negate() 
-        : Duration.fromMillis(0);
+      // Corrected calculation for 'diff'
+      // The difference is based on the UTC offsets of the two timezones at that specific instant.
+      const offsetDiffMinutes = toDateTime.offset - fromDateTime.offset;
+      const diff: Duration = Duration.fromObject({ minutes: offsetDiffMinutes });
 
 
       let differenceString = "";
-      const diffHours = Math.abs(diff.as('hours'));
-      const diffMinutesPart = Math.abs(diff.as('minutes') % 60);
+      const totalAbsoluteMinutes = Math.abs(diff.as('minutes'));
+      const diffHours = Math.floor(totalAbsoluteMinutes / 60);
+      const diffMinutesPart = totalAbsoluteMinutes % 60;
 
       const fromZoneLabel = sortedTimeZones.find(tz => tz.value === fromZone)?.label.split('(')[0].trim() || fromZone;
       const toZoneLabel = sortedTimeZones.find(tz => tz.value === toZone)?.label.split('(')[0].trim() || toZone;
@@ -77,10 +79,14 @@ const TimeDifferenceCalculator = () => {
       } else {
         const comparison = diff.as('milliseconds') > 0 ? "ahead of" : "behind";
         let parts = [];
-        if (Math.floor(diffHours) > 0) parts.push(`${Math.floor(diffHours)} hour${Math.floor(diffHours) !== 1 ? 's' : ''}`);
+        if (diffHours > 0) parts.push(`${diffHours} hour${diffHours !== 1 ? 's' : ''}`);
         if (diffMinutesPart > 0) parts.push(`${diffMinutesPart} minute${diffMinutesPart !== 1 ? 's' : ''}`);
         
-        differenceString = `${toZoneLabel} is ${parts.join(' and ')} ${comparison} ${fromZoneLabel}.`;
+        if (parts.length === 0 && diff.as('milliseconds') !== 0) {
+             differenceString = `${toZoneLabel} has a negligible time difference with ${fromZoneLabel}.`;
+        } else {
+            differenceString = `${toZoneLabel} is ${parts.join(' and ')} ${comparison} ${fromZoneLabel}.`;
+        }
       }
 
       setResultInfo({
@@ -205,3 +211,4 @@ const TimeDifferenceCalculator = () => {
 };
 
 export default TimeDifferenceCalculator;
+
