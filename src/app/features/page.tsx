@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from 'next';
 
@@ -124,6 +124,20 @@ const features: Feature[] = [
     description: "Measure elapsed time with lap functionality.",
     link: "/stopwatch",
     cta: "Use Stopwatch",
+  },
+  {
+    icon: CalendarRange,
+    title: "Date Duration Calculator",
+    description: "Calculate the exact duration between two dates.",
+    link: "/date-duration-calculator",
+    cta: "Calculate Duration",
+  },
+  {
+    icon: Briefcase,
+    title: "Workday Calculator",
+    description: "Calculate a future date by adding business days (Mon-Fri).",
+    link: "/workday-calculator",
+    cta: "Calculate Workday",
   }
 ];
 
