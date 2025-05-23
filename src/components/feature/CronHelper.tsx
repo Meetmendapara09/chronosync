@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Settings2, CalendarClock, Info, CircleHelp } from "lucide-react";
 import { timeZoneOptions } from '@/lib/data/timezones';
 import { DateTime } from 'luxon';
-import { parseExpression } from 'cron-parser'; // Changed import
+import * as cronParser from 'cron-parser'; // Changed import
 import cronstrue from 'cronstrue';
 
 interface CronParts {
@@ -95,7 +95,7 @@ const CronHelper = () => {
         tz: selectedTimeZone,
         iterator: true
       };
-      const interval = parseExpression(fullCronExpression, options); // Use imported parseExpression
+      const interval = cronParser.parseExpression(fullCronExpression, options); // Use imported parseExpression from namespace
       const runs: string[] = [];
       for (let i = 0; i < 5; i++) {
         const next = interval.next() as unknown as { value: { toDate: () => Date } }; // Type assertion needed for iterator value
@@ -228,3 +228,4 @@ const CronHelper = () => {
 };
 
 export default CronHelper;
+
