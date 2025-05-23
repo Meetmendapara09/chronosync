@@ -1,16 +1,19 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// Button component is not used currently, can be removed if not planned for future
+// import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Settings2, CalendarClock, Info, CircleHelp } from "lucide-react";
 import { timeZoneOptions } from '@/lib/data/timezones';
 import { DateTime } from 'luxon';
+import cronParser from 'cron-parser';
+import cronstrue from 'cronstrue';
 
 interface CronParts {
   minute: string;
@@ -34,8 +37,8 @@ const CronHelper = () => {
   const [nextRuns, setNextRuns] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const sortedTimeZones = useMemo(() => 
-    [...timeZoneOptions].sort((a, b) => a.label.localeCompare(b.label)), 
+  const sortedTimeZones = useMemo(() =>
+    [...timeZoneOptions].sort((a, b) => a.label.localeCompare(b.label)),
   []);
 
   useEffect(() => {
@@ -48,7 +51,7 @@ const CronHelper = () => {
     setFullCronExpression(`${minute} ${hour} ${dayOfMonth} ${month} ${dayOfWeek}`);
   }, [cronParts]);
 
-  // Basic update of parts when full expression changes (can be enhanced with validation)
+  // Update parts when full expression changes
   const handleFullCronChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFullExpression = e.target.value;
     setFullCronExpression(newFullExpression);
@@ -61,8 +64,6 @@ const CronHelper = () => {
         month: parts[3],
         dayOfWeek: parts[4],
       });
-    } else {
-      // Could add validation/error feedback here
     }
   };
 
@@ -70,54 +71,59 @@ const CronHelper = () => {
     setCronParts(prev => ({ ...prev, [part]: value }));
   };
 
-  const handleGenerateDetails = () => {
+  const handleGenerateDetails = useCallback(() => {
     setError(null);
     setHumanReadable('');
     setNextRuns([]);
 
-    // Placeholder for actual cron parsing and generation logic
-    // This is where libraries like 'cron-parser' and 'cronstrue' would be used.
-    setHumanReadable(
-      "Human-readable description will appear here. (Requires 'cronstrue' library integration)"
-    );
-    
-    const placeholderRuns = [];
-    if (selectedTimeZone) {
-        try {
-            let baseTime = DateTime.now().setZone(selectedTimeZone);
-            if (!baseTime.isValid) {
-                placeholderRuns.push(`Invalid timezone selected: ${selectedTimeZone}`);
-            } else {
-                for (let i = 1; i <= 5; i++) {
-                    placeholderRuns.push(
-                        `Next run ${i} (example): ${baseTime.plus({ minutes: i * 5 }).toFormat('yyyy-MM-dd HH:mm:ss ZZZZ')}`
-                    );
-                }
-            }
-        } catch (e) {
-             placeholderRuns.push(`Error with timezone: ${selectedTimeZone}`);
+    if (!fullCronExpression || fullCronExpression.split(' ').length !== 5) {
+      setError("Cron expression must have 5 parts (e.g., '* * * * *').");
+      return;
+    }
+    if (!selectedTimeZone) {
+      setError("Please select a timezone.");
+      return;
+    }
+
+    try {
+      // Generate human-readable string
+      const readableStr = cronstrue.toString(fullCronExpression, { use24HourTimeFormat: true, verbose: true });
+      setHumanReadable(readableStr);
+
+      // Calculate next 5 run times
+      const options = {
+        tz: selectedTimeZone,
+        iterator: true
+      };
+      const interval = cronParser.parseExpression(fullCronExpression, options);
+      const runs: string[] = [];
+      for (let i = 0; i < 5; i++) {
+        const next = interval.next() as unknown as { value: { toDate: () => Date } }; // Type assertion needed for iterator value
+        if (next.value) {
+          runs.push(DateTime.fromJSDate(next.value.toDate()).setZone(selectedTimeZone).toFormat('yyyy-MM-dd HH:mm:ss ZZZZ'));
+        } else {
+          break; // No more occurrences
         }
-    } else {
-         placeholderRuns.push("Select a timezone to see example next run times.");
-    }
+      }
+      setNextRuns(runs);
+       if (runs.length === 0) {
+        setHumanReadable(prev => prev + (prev ? " " : "") + "This expression may not have future occurrences or is invalid for the selected timezone.");
+      }
 
 
-    setNextRuns([
-      ...placeholderRuns,
-      "Actual next run times require 'cron-parser' library integration.",
-    ]);
-
-    if (!fullCronExpression.match(/^(\*|([0-9,-/]+))\s+(\*|([0-9,-/]+))\s+(\*|([0-9,-/]+))\s+(\*|([0-9,-/]+|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\s+(\*|([0-9,-/]+|sun|mon|tue|wed|thu|fri|sat))$/i)) {
-       setError("Cron expression format seems invalid. Please check standard cron syntax (5 parts). For example: * * * * * or 0 0 1 * *");
+    } catch (e: any) {
+      console.error("Cron processing error:", e);
+      setError(`Error processing cron expression: ${e.message}. Please ensure it's a valid cron string.`);
+      setHumanReadable('');
+      setNextRuns([]);
     }
-  };
-  
-  useEffect(() => {
-    if(fullCronExpression.split(' ').length === 5) {
-        handleGenerateDetails();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullCronExpression, selectedTimeZone]);
+
+  useEffect(() => {
+    if (fullCronExpression.split(' ').length === 5 && selectedTimeZone) {
+      handleGenerateDetails();
+    }
+  }, [fullCronExpression, selectedTimeZone, handleGenerateDetails]);
 
 
   const cronPartLabels: { key: keyof CronParts; label: string; placeholder: string }[] = [
@@ -185,7 +191,7 @@ const CronHelper = () => {
             </div>
 
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="mt-2">
                 <CircleHelp className="h-4 w-4" />
                 <AlertTitle>Validation Issue</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
@@ -194,35 +200,21 @@ const CronHelper = () => {
 
             <div className="mt-4 p-3 bg-muted rounded-md space-y-2">
               <h4 className="font-semibold text-muted-foreground">Human-Readable Description:</h4>
-              <p className="text-sm italic">{humanReadable || "Enter a cron expression above."}</p>
-              {!humanReadable.toLowerCase().includes("require") && (
-                  <Alert variant="default" className="mt-2">
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>Note</AlertTitle>
-                      <AlertDescription>
-                          For accurate human-readable descriptions, integrate a library like <code className="font-mono text-xs bg-gray-200 dark:bg-gray-700 p-0.5 rounded">cronstrue</code>.
-                      </AlertDescription>
-                  </Alert>
+              {humanReadable ? (
+                 <p className="text-sm italic">{humanReadable}</p>
+              ) : (
+                !error && <p className="text-sm italic">Enter a valid cron expression above.</p>
               )}
             </div>
 
             <div className="mt-4 p-3 bg-muted rounded-md space-y-2">
-              <h4 className="font-semibold text-muted-foreground">Upcoming Execution Times (Local to Selected Timezone):</h4>
+              <h4 className="font-semibold text-muted-foreground">Upcoming Execution Times ({selectedTimeZone.split('/').pop()?.replace('_', ' ')} Time):</h4>
               {nextRuns.length > 0 ? (
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   {nextRuns.map((run, index) => <li key={index} className="font-mono">{run}</li>)}
                 </ul>
               ) : (
-                <p className="text-sm italic">Next run times will appear here.</p>
-              )}
-               {!nextRuns.some(run => run.toLowerCase().includes("require")) && nextRuns.length > 0 && (
-                  <Alert variant="default" className="mt-2">
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>Note</AlertTitle>
-                      <AlertDescription>
-                          For precise scheduling and calculation of next run times, integrate a library like <code className="font-mono text-xs bg-gray-200 dark:bg-gray-700 p-0.5 rounded">cron-parser</code>.
-                      </AlertDescription>
-                  </Alert>
+                 !error && <p className="text-sm italic">Next run times will appear here.</p>
               )}
             </div>
           </div>
@@ -236,3 +228,4 @@ const CronHelper = () => {
 };
 
 export default CronHelper;
+
