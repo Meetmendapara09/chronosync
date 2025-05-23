@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4 } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4, Settings2 } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from 'next';
 
@@ -79,7 +79,7 @@ const features: Feature[] = [
   {
     icon: CalendarPlus,
     title: "Event Scheduler",
-    description: "Schedule events & generate shareable links for any timezone.",
+    description: "Schedule events &amp; generate shareable links for any timezone.",
     link: "/event-scheduler",
     cta: "Schedule Event",
   },
@@ -145,6 +145,13 @@ const features: Feature[] = [
     description: "Visualize recurring shift patterns across timezones.",
     link: "/shift-planner",
     cta: "View Shifts",
+  },
+  {
+    icon: Settings2,
+    title: "Cron Expression Helper",
+    description: "Build, visualize, and understand cron expressions.",
+    link: "/cron-helper",
+    cta: "Build Cron",
   }
 ];
 
