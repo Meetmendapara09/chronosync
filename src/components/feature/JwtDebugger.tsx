@@ -5,7 +5,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button"; // Added if we want a manual decode button
+// Button component is not used currently, can be removed if not planned for future
+// import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Code, CheckCircle, XCircle, AlertCircle, Clock, ShieldAlert } from "lucide-react";
 import { DateTime } from 'luxon';
@@ -21,6 +22,28 @@ interface TimestampInfo {
   local: string;
   utc: string;
 }
+
+// Helper function to decode Base64URL
+function decodeBase64Url(base64Url: string): string {
+  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const padding = base64.length % 4;
+  if (padding) {
+    base64 += '='.repeat(4 - padding);
+  }
+  try {
+    const binaryString = atob(base64);
+    // Convert binary string to UTF-8 string
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+  } catch (e) {
+    console.error('Base64URL decoding error:', e);
+    throw new Error('Failed to decode Base64URL string. Ensure it is valid.');
+  }
+}
+
 
 const JwtDebugger = () => {
   const [jwtInput, setJwtInput] = useState<string>('');
@@ -47,9 +70,17 @@ const JwtDebugger = () => {
         setError('Invalid JWT structure. A JWT must have three parts separated by dots.');
         return;
       }
+      
+      let headerStr: string;
+      let payloadStr: string;
 
-      const headerStr = Buffer.from(parts[0], 'base64url').toString('utf8');
-      const payloadStr = Buffer.from(parts[1], 'base64url').toString('utf8');
+      try {
+        headerStr = decodeBase64Url(parts[0]);
+        payloadStr = decodeBase64Url(parts[1]);
+      } catch (e: any) {
+        setError(e.message || 'Failed to decode Base64URL parts of the JWT.');
+        return;
+      }
       
       let header: DecodedJwtPart;
       let payload: DecodedJwtPart;
