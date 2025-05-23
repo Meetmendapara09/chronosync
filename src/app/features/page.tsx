@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4, Settings2 } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4, Settings2, Code } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from 'next';
 
@@ -79,7 +79,7 @@ const features: Feature[] = [
   {
     icon: CalendarPlus,
     title: "Event Scheduler",
-    description: "Schedule events &amp; generate shareable links for any timezone.",
+    description: "Schedule events & generate shareable links for any timezone.",
     link: "/event-scheduler",
     cta: "Schedule Event",
   },
@@ -152,6 +152,13 @@ const features: Feature[] = [
     description: "Build, visualize, and understand cron expressions.",
     link: "/cron-helper",
     cta: "Build Cron",
+  },
+  {
+    icon: Code,
+    title: "JWT Debugger",
+    description: "Decode and inspect JSON Web Tokens and check expiry.",
+    link: "/jwt-debugger",
+    cta: "Debug JWT",
   }
 ];
 

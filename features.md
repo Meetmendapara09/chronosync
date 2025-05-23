@@ -14,6 +14,7 @@ This document provides an overview of all the features available in the ChronoSy
 - **Specialized Libraries**:
     - SunCalc.js (for Sunrise/Sunset)
     - html2canvas & jsPDF (for PDF export in Event Viewer)
+    - cron-parser & cronstrue (for Cron Helper)
 
 ---
 
@@ -52,8 +53,8 @@ This document provides an overview of all the features available in the ChronoSy
     1.  Users can add timezones from a dropdown list.
     2.  For each added timezone, the user can provide a custom label (e.g., "London Office").
     3.  The application displays a card for each selected timezone, showing the custom label (or default timezone name), current date, current time (updating every second), and UTC offset.
-    4.  Users can remove clocks or reorder them.
-    5.  The list of selected clocks and their labels are persisted in the browser's `localStorage`.
+    4.  Users can remove clocks or reorder them using up/down buttons.
+    5.  The list of selected clocks, their labels, and order are persisted in the browser's `localStorage`.
 -   **Key Inputs**: Selection of timezones, custom labels.
 -   **Key Outputs**: Live-updating list of clocks with current date, time, and offset for each.
 -   **File**: `src/components/feature/WorldClock.tsx`
@@ -68,7 +69,7 @@ This document provides an overview of all the features available in the ChronoSy
     2.  The user chooses an operation: "Add" or "Subtract".
     3.  The user inputs a numeric "Duration Value" (e.g., 5).
     4.  The user selects a "Duration Unit" (Days, Weeks, Months, Years).
-    5.  Upon clicking "Calculate Date", the resulting date is displayed. (Note: Auto-calculates on input change).
+    5.  Upon clicking "Calculate Date", the resulting date is displayed.
 -   **Key Inputs**: Start Date, Operation, Duration Value, Duration Unit.
 -   **Key Outputs**: Calculated resulting date.
 -   **File**: `src/components/feature/DateCalculator.tsx`
@@ -96,7 +97,7 @@ This document provides an overview of all the features available in the ChronoSy
 
 -   **Purpose**: To help users plan meetings by visualizing overlapping working hours (Mon-Fri, 9 AM - 5 PM local time) across multiple selected timezones.
 -   **How it Works**:
-    1.  Users can add multiple timezones (up to a limit).
+    1.  Users can add multiple timezones.
     2.  Users select a reference date.
     3.  The tool displays a grid:
         *   Rows represent selected timezones.
@@ -114,8 +115,8 @@ This document provides an overview of all the features available in the ChronoSy
 -   **Purpose**: To find optimal overlapping working hours (9 AM - 5 PM local time) for calling between multiple locations.
 -   **How it Works**:
     1.  Users can add up to four locations/timezones.
-    2.  The tool displays a 24-hour schedule based on the current date.
-    3.  For each hour slot (referenced from the first selected timezone):
+    2.  The tool displays a 24-hour schedule based on the current date (referenced from the first selected timezone).
+    3.  For each hour slot:
         *   It shows the local time in each selected timezone.
         *   Cells for each timezone are highlighted if it's a working hour.
         *   An "Overlap" column indicates how many of the selected locations are within working hours, with varying intensity of highlight (e.g., light green for partial overlap, darker green for full overlap).
@@ -152,7 +153,7 @@ This document provides an overview of all the features available in the ChronoSy
     3.  Displays the event time in the viewer's local time, the original creator's time, event duration, and description.
     4.  Provides "Add to Google Calendar" and "Download ICS File" buttons (ICS generated client-side).
     5.  Provides a "Download as PDF" option using `html2canvas` and `jspdf`.
--   **Key Inputs (Scheduler)**: Event Name, Date, Time, Event Timezone, Duration, Description (optional).
+-   **Key Inputs (Scheduler)**: Event Name, Date, Time, Event Timezone, Duration (hours/minutes), Description (optional).
 -   **Key Outputs (Scheduler)**: Shareable URL.
 -   **Key Inputs (Viewer)**: URL with event parameters.
 -   **Key Outputs (Viewer)**: Event details in local time, calendar/export options.
@@ -259,7 +260,7 @@ This document provides an overview of all the features available in the ChronoSy
 
 ---
 
-## 17. Shift Planner (Shift Work Viewer)
+## 17. Shift Work Viewer (Shift Planner)
 
 -   **Purpose**: A simplified tool to help users visualize a recurring shift pattern for themselves, and optionally see how those shift times translate to one other timezone.
 -   **How it Works**:
@@ -272,5 +273,54 @@ This document provides an overview of all the features available in the ChronoSy
 -   **Key Inputs**: Local Timezone, Shift Start Time, Duration, Work Pattern, Reference Date, Weeks to Display, Optional Additional Timezone.
 -   **Key Outputs**: A schedule table visualizing the shift pattern.
 -   **File**: `src/components/feature/ShiftPlanner.tsx`
+
+---
+
+## 18. Cron Expression Helper
+
+-   **Purpose**: To assist developers in building, visualizing, and understanding cron expressions for scheduling tasks.
+-   **How it Works**:
+    1.  User can input cron expression parts (minute, hour, day of month, month, day of week) or the full cron string.
+    2.  User selects a timezone for interpreting the "next run" times.
+    3.  The tool displays a human-readable description of the cron expression (e.g., "At 00 minutes past every 2nd hour from 0 through 23 on day-of-month 1 and 15 in January and June").
+    4.  It lists the next 5 upcoming execution times based on the expression and selected timezone.
+-   **Key Inputs**: Cron expression (parts or full string), Timezone.
+-   **Key Outputs**: Human-readable description, List of next 5 execution times.
+-   **Dependencies**: `cron-parser`, `cronstrue`.
+-   **File**: `src/components/feature/CronHelper.tsx`
+
+---
+
+## 19. JWT Debugger
+
+-   **Purpose**: To help developers decode and inspect JSON Web Tokens (JWTs), particularly for checking claims like expiration.
+-   **How it Works**:
+    1.  User pastes a JWT string into a textarea.
+    2.  The tool decodes the Header and Payload sections of the JWT (it does NOT verify the signature).
+    3.  It displays the decoded JSON for both Header and Payload.
+    4.  It specifically looks for standard timestamp claims (`exp`, `iat`, `nbf`) in the payload.
+    5.  These timestamps (which are typically Unix epoch in seconds) are converted to human-readable dates (both local and UTC).
+    6.  A status is displayed indicating if the token is "Valid" (based on `exp` and `nbf`), "Expired", or "Not Yet Active".
+-   **Key Inputs**: JWT string.
+-   **Key Outputs**: Decoded Header JSON, Decoded Payload JSON, list of formatted timestamp claims, token validity status.
+-   **Note**: Emphasizes that signature is NOT verified by this client-side tool.
+-   **File**: `src/components/feature/JwtDebugger.tsx`
+
+---
+
+## 20. Interactive Time Zone Map (Re-added)
+
+-   **Purpose**: To provide a visual way to explore global time zones and see current times by clicking on a map.
+-   **How it Works**:
+    1.  Displays a world map using Leaflet.js.
+    2.  Overlays illustrative GeoJSON data representing simplified timezone boundaries. (Note: Uses simplified data, not precise boundaries).
+    3.  When a user clicks on a timezone region on the map:
+        *   A popup appears at the click location.
+        *   The popup displays the name of the timezone region and the current time in that timezone.
+    4.  Error handling is included for cases where timezone data might be missing or invalid for a clicked region.
+-   **Key Inputs**: User clicks on map regions.
+-   **Key Outputs**: Popup on map with timezone name and current time.
+-   **Dependencies**: `leaflet`, `react-leaflet`, `@types/leaflet`.
+-   **Files**: `src/components/feature/TimeZoneMap.tsx`, `src/lib/data/timezone-map-data.ts`.
 
 ---
