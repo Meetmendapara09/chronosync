@@ -324,3 +324,26 @@ This document provides an overview of all the features available in the ChronoSy
 -   **Files**: `src/components/feature/TimeZoneMap.tsx`, `src/lib/data/timezone-map-data.ts`.
 
 ---
+
+## 21. Log Timestamp Analyzer
+
+-   **Purpose**: To help developers analyze application or server logs by detecting, parsing, and converting timestamps within the log data.
+-   **How it Works**:
+    1.  User pastes a block of log text into a textarea.
+    2.  User selects a "Target Display Timezone" for all converted timestamps.
+    3.  User can specify an "Assumed Input Timezone" for timestamps in the logs that don't have explicit offset information (defaults to UTC).
+    4.  The tool attempts to detect timestamps in each line using a predefined set of common regex patterns (ISO 8601 variations, Unix timestamps, etc.).
+    5.  For each detected timestamp, it's parsed and converted to the target display timezone.
+    6.  Results are displayed in a table showing:
+        *   Original line number.
+        *   A snippet of the original log line.
+        *   The detected raw timestamp and the pattern name that matched it.
+        *   The converted timestamp in the target timezone.
+        *   The time difference to the next chronological timestamp found in the logs.
+    7.  Entries are sorted chronologically if timestamps are found.
+-   **Key Inputs**: Log text, Target Display Timezone, Assumed Input Timezone.
+-   **Key Outputs**: A table of processed log entries with converted timestamps and time differences.
+-   **Note**: Relies on regex for detection, which may not capture all possible timestamp formats.
+-   **File**: `src/components/feature/LogTimestampAnalyzer.tsx`
+
+---

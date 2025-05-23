@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4, Settings2, Code } from "lucide-react"; 
+import { Globe2, Timer as CountdownIcon, Clock, CalendarDays, Cpu, ArrowRight, Users, PhoneCall, Sunrise, CalendarPlus, Plane, CalendarClock, MapPin, Bed, Clock10, TimerIcon as StopwatchIcon, CalendarRange, Briefcase, Clock4, Settings2, Code, FileText } from "lucide-react"; 
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from 'next';
 
@@ -159,6 +159,13 @@ const features: Feature[] = [
     description: "Decode and inspect JSON Web Tokens and check expiry.",
     link: "/jwt-debugger",
     cta: "Debug JWT",
+  },
+  {
+    icon: FileText,
+    title: "Log Timestamp Analyzer",
+    description: "Parse logs, convert timestamps, and analyze time differences.",
+    link: "/log-timestamp-analyzer",
+    cta: "Analyze Logs",
   }
 ];
 
